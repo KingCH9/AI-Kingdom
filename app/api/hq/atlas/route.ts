@@ -15,6 +15,7 @@ export async function GET() {
       departmentWorkloads: snapshot.departmentWorkloads,
       workloadSummary: snapshot.workloadSummary,
       portfolioSummary: snapshot.portfolioSummary,
+      scoutRankings: snapshot.scoutRankings,
       executiveSummary: snapshot.executiveSummary,
       generatedAt: snapshot.generatedAt,
     });

@@ -236,6 +236,48 @@ export default async function HqPage() {
       </section>
 
       <section className="mb-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-2xl font-bold">🔬 Athena Intelligence</h2>
+            <p className="text-sm text-gray-500">
+              {hq.athenaIntelligenceSummary.topScout
+                ? `Top scout ${hq.athenaIntelligenceSummary.topScout.name} · score ${hq.athenaIntelligenceSummary.topScout.score}`
+                : "Scout metrics computed from opportunities, missions, and revenue"}
+            </p>
+          </div>
+          <Link href="/hq/scouts" className="text-sm text-blue-400 hover:underline">
+            Scout intelligence dashboard →
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl">
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Top Scout</p>
+            <p className="text-lg font-bold truncate">
+              {hq.athenaIntelligenceSummary.topScout?.name ?? "—"}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Avg Scout Score</p>
+            <p className="text-2xl font-bold">
+              {hq.athenaIntelligenceSummary.averageScoutScore}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Total Scout Revenue</p>
+            <p className="text-2xl font-bold text-green-400">
+              {formatGbp(hq.athenaIntelligenceSummary.totalScoutRevenue)}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Highest Revenue Scout</p>
+            <p className="text-lg font-bold truncate">
+              {hq.athenaIntelligenceSummary.highestRevenueScout?.name ?? "—"}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mb-10">
         <h2 className="text-2xl font-bold mb-4">Ventures by Type</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
           {hq.ventureDistribution.map((vt) => (

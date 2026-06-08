@@ -42,6 +42,10 @@ export default function RootLayout({
                 👔 Atlas
               </Link>
 
+              <Link href="/hq/scouts">
+                🔬 Scouts
+              </Link>
+
               <Link href="/hq/finance">
                 💰 Finance
               </Link>

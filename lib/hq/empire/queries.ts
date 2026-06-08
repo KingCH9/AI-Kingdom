@@ -334,3 +334,9 @@ export async function getAtlasEmpireSummary() {
     activeMissionsTracked: metrics.activeMissions,
   };
 }
+
+/** Athena scout intelligence summary for empire/HQ integration. */
+export async function getAthenaEmpireSummary() {
+  const { getAthenaIntelligenceSummary } = await import("../athena/intelligence-dashboard");
+  return getAthenaIntelligenceSummary();
+}

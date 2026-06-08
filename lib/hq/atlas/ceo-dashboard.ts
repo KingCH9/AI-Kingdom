@@ -21,6 +21,10 @@ import {
   workloadPortfolioSummary,
   type DepartmentWorkloadAnalysis,
 } from "./workload-analysis";
+import {
+  getScoutRankingsForAtlas,
+  type ScoutRankings,
+} from "../athena/intelligence-dashboard";
 
 export type AtlasDashboardSnapshot = {
   generatedAt: string;
@@ -31,6 +35,7 @@ export type AtlasDashboardSnapshot = {
   departmentWorkloads: DepartmentWorkloadAnalysis[];
   workloadSummary: ReturnType<typeof workloadPortfolioSummary>;
   portfolioSummary: PortfolioRanking;
+  scoutRankings: ScoutRankings;
   executiveSummary: {
     totalMissions: number;
     activeMissions: number;
@@ -88,11 +93,13 @@ async function loadAtlasMissionInputs(): Promise<AtlasMissionInput[]> {
 
 /** Atlas CEO dashboard — advisory executive snapshot. Read-only. */
 export async function getAtlasDashboardSnapshot(): Promise<AtlasDashboardSnapshot> {
-  const [empire, missionInputs, orchestrationWorkloads] = await Promise.all([
-    getEmpireScoreSnapshot(),
-    loadAtlasMissionInputs(),
-    getDepartmentWorkloads(),
-  ]);
+  const [empire, missionInputs, orchestrationWorkloads, scoutRankings] =
+    await Promise.all([
+      getEmpireScoreSnapshot(),
+      loadAtlasMissionInputs(),
+      getDepartmentWorkloads(),
+      getScoutRankingsForAtlas(),
+    ]);
 
   const priorityMissions = computeAllMissionPriorities(missionInputs);
   const recommendations = buildAtlasRecommendations(priorityMissions);
@@ -113,6 +120,7 @@ export async function getAtlasDashboardSnapshot(): Promise<AtlasDashboardSnapsho
     departmentWorkloads,
     workloadSummary,
     portfolioSummary,
+    scoutRankings,
     executiveSummary: {
       totalMissions: missionInputs.length,
       activeMissions,

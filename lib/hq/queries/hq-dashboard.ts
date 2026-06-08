@@ -19,7 +19,7 @@ import {
   getRecentMissionEvents,
 } from "../missions/mission-service";
 import { getFinanceSnapshot } from "../finance/queries";
-import { getEmpireScoreSnapshot, getAtlasEmpireSummary } from "../empire/queries";
+import { getEmpireScoreSnapshot, getAtlasEmpireSummary, getAthenaEmpireSummary } from "../empire/queries";
 
 export type HqDepartmentSnapshot = {
   key: DepartmentKey;
@@ -146,6 +146,22 @@ export type HqSnapshot = {
     killRecommendations: number;
     activeMissionsTracked: number;
   };
+  athenaIntelligenceSummary: {
+    topScout: {
+      scoutKey: string;
+      name: string;
+      score: number;
+      level: number;
+      xp: number;
+    } | null;
+    averageScoutScore: number;
+    totalScoutRevenue: number;
+    highestRevenueScout: {
+      scoutKey: string;
+      name: string;
+      revenueGenerated: number;
+    } | null;
+  };
 };
 
 function deriveAgentStatus(
@@ -236,6 +252,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     financeSnapshot,
     empireSnapshot,
     atlasSummary,
+    athenaIntelligenceSummary,
   ] = await Promise.all([
     prisma.department.findMany({
       include: {
@@ -275,6 +292,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     getFinanceSnapshot(),
     getEmpireScoreSnapshot(),
     getAtlasEmpireSummary(),
+    getAthenaEmpireSummary(),
   ]);
 
   const pending =
@@ -454,5 +472,26 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
       launchReadyCount: empireSnapshot.metrics.launchReadyCount,
     },
     atlasSummary,
+    athenaIntelligenceSummary: {
+      topScout: athenaIntelligenceSummary.topScout
+        ? {
+            scoutKey: athenaIntelligenceSummary.topScout.scoutKey,
+            name: athenaIntelligenceSummary.topScout.name,
+            score: athenaIntelligenceSummary.topScout.score,
+            level: athenaIntelligenceSummary.topScout.level,
+            xp: athenaIntelligenceSummary.topScout.xp,
+          }
+        : null,
+      averageScoutScore: athenaIntelligenceSummary.averageScoutScore,
+      totalScoutRevenue: athenaIntelligenceSummary.totalScoutRevenue,
+      highestRevenueScout: athenaIntelligenceSummary.highestRevenueScout
+        ? {
+            scoutKey: athenaIntelligenceSummary.highestRevenueScout.scoutKey,
+            name: athenaIntelligenceSummary.highestRevenueScout.name,
+            revenueGenerated:
+              athenaIntelligenceSummary.highestRevenueScout.revenueGenerated,
+          }
+        : null,
+    },
   };
 }
