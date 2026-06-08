@@ -82,6 +82,10 @@ export default function RootLayout({
                 💷 Capital
               </Link>
 
+              <Link href="/hq/ventures">
+                🚀 VSE
+              </Link>
+
               <Link href="/validator">
                 🔬 Validator Queue
               </Link>

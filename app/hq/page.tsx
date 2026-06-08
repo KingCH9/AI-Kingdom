@@ -528,6 +528,53 @@ export default async function HqPage() {
       <section className="mb-10">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
           <div>
+            <h2 className="text-2xl font-bold">🚀 Venture Scaling Engine</h2>
+            <p className="text-sm text-gray-500">
+              Period {hq.vseSummary.periodMonth} · advisory only · no auto-scaling
+            </p>
+          </div>
+          <Link href="/hq/ventures" className="text-sm text-blue-400 hover:underline">
+            VSE dashboard →
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl">
+          <div className="p-4 rounded-xl border border-emerald-500/30 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Scaling Score</p>
+            <p className="text-2xl font-bold text-emerald-400">
+              {hq.vseSummary.portfolioScalingScore}/100
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Scale Now</p>
+            <p className="text-2xl font-bold text-green-400">
+              {hq.vseSummary.scaleNowCount}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Top Recommendation</p>
+            <p className="text-lg font-bold truncate capitalize">
+              {hq.vseSummary.topRecommendation
+                ? hq.vseSummary.topRecommendation.recommendation.replace(/_/g, " ")
+                : "—"}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Top Scaling Venture</p>
+            <p className="text-lg font-bold truncate">
+              {hq.vseSummary.topScalingVenture?.title ?? "—"}
+            </p>
+            {hq.vseSummary.topScalingVenture && (
+              <p className="text-xs text-gray-500">
+                Score {hq.vseSummary.topScalingVenture.scalingScore}/100
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="mb-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
             <h2 className="text-2xl font-bold">🏆 Top Performers</h2>
             <p className="text-sm text-gray-500">
               Agent & scout workstation leaders — read-only profiles

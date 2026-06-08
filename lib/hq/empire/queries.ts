@@ -370,3 +370,9 @@ export async function getCaeEmpireSummary() {
   const { getCaeSummary } = await import("../capital/capital-dashboard");
   return getCaeSummary();
 }
+
+/** VSE venture scaling summary for empire/HQ integration. */
+export async function getVseEmpireSummary() {
+  const { getVseSummary } = await import("../ventures/scaling-dashboard");
+  return getVseSummary();
+}

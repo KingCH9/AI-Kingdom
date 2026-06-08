@@ -23,7 +23,7 @@ import { getPerformanceSummary } from "../performance/performance-queries";
 import { getEmpireScoreV2Summary } from "../empire/score-v2-dashboard";
 import { getAgentProfileDefinition } from "../workstations/agent-profiles";
 import { getScoutProfileDefinition } from "../workstations/scout-profiles";
-import { getEmpireScoreSnapshot, getAtlasEmpireSummary, getAthenaEmpireSummary, getForgeEmpireSummary, getNovaEmpireSummary, getMercuryEmpireSummary, getRaeEmpireSummary, getCaeEmpireSummary } from "../empire/queries";
+import { getEmpireScoreSnapshot, getAtlasEmpireSummary, getAthenaEmpireSummary, getForgeEmpireSummary, getNovaEmpireSummary, getMercuryEmpireSummary, getRaeEmpireSummary, getCaeEmpireSummary, getVseEmpireSummary } from "../empire/queries";
 
 export type HqDepartmentSnapshot = {
   key: DepartmentKey;
@@ -263,6 +263,23 @@ export type HqSnapshot = {
       recommendedAllocation: number;
     } | null;
   };
+  vseSummary: {
+    periodMonth: string;
+    portfolioScalingScore: number;
+    scaleNowCount: number;
+    scaleCautiouslyCount: number;
+    topRecommendation: {
+      missionId: number;
+      title: string;
+      scalingScore: number;
+      recommendation: string;
+    } | null;
+    topScalingVenture: {
+      missionId: number;
+      title: string;
+      scalingScore: number;
+    } | null;
+  };
   performanceSummary: {
     topAgent: {
       agentKey: string;
@@ -427,6 +444,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     mercurySummary,
     raeSummary,
     caeSummary,
+    vseSummary,
     performanceSummary,
     empireScoreV2Summary,
   ] = await Promise.all([
@@ -474,6 +492,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     getMercuryEmpireSummary(),
     getRaeEmpireSummary(),
     getCaeEmpireSummary(),
+    getVseEmpireSummary(),
     getPerformanceSummary(),
     getEmpireScoreV2Summary(),
   ]);
@@ -764,6 +783,14 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
       fundCount: caeSummary.fundCount,
       topRecommendation: caeSummary.topRecommendation,
       topVenture: caeSummary.topVenture,
+    },
+    vseSummary: {
+      periodMonth: vseSummary.periodMonth,
+      portfolioScalingScore: vseSummary.portfolioScalingScore,
+      scaleNowCount: vseSummary.scaleNowCount,
+      scaleCautiouslyCount: vseSummary.scaleCautiouslyCount,
+      topRecommendation: vseSummary.topRecommendation,
+      topScalingVenture: vseSummary.topScalingVenture,
     },
     performanceSummary: {
       topAgent: performanceSummary.topAgent,
