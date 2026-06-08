@@ -48,6 +48,22 @@ export type {
 } from "./validate-opportunity";
 export { runValidatorCycle } from "./validator-cycle";
 export type { ValidatorCycleResult, ValidatorCycleOptions } from "./validator-cycle";
+export { runCeoCycle } from "./ceo-cycle";
+export type { CeoCycleResult, CeoCycleOptions } from "./ceo-cycle";
+export {
+  evaluateCeoDecision,
+  processCeoDecision,
+} from "./evaluate-ceo-decision";
+export type {
+  CeoDecision,
+  ProcessCeoDecisionInput,
+  ProcessCeoDecisionResult,
+} from "./evaluate-ceo-decision";
+export { runEmpirePipelineCycle } from "./pipeline-cycle";
+export type {
+  EmpirePipelineCycleResult,
+  EmpirePipelineCycleOptions,
+} from "./pipeline-cycle";
 export { deriveScoresFromClaudeResponse } from "./derive-scores";
 export {
   OPPORTUNITY_SCORE_WEIGHTS,

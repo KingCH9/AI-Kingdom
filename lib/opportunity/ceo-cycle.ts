@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { normalizeOpportunityStatus } from "./status";
 import {
-  evaluateValidationDecision,
-  validateOpportunity,
-} from "./validate-opportunity";
+  evaluateCeoDecision,
+  processCeoDecision,
+} from "./evaluate-ceo-decision";
 
-export type ValidatorCycleResult = {
+export type CeoCycleResult = {
   processed: number;
   approved: number;
   rejected: number;
@@ -20,46 +20,47 @@ export type ValidatorCycleResult = {
   finishedAt: Date;
 };
 
-export type ValidatorCycleOptions = {
+export type CeoCycleOptions = {
   limit?: number;
 };
 
 /**
- * Runs Atlas validation on researching opportunities.
- * Deterministic — uses meetsValidatedCriteria on existing score data.
+ * Runs Alpha (CEO) approval on validated opportunities.
+ * Deterministic — uses meetsLaunchReadyCriteria on existing score data.
  */
-export async function runValidatorCycle(
-  options: ValidatorCycleOptions = {}
-): Promise<ValidatorCycleResult> {
+export async function runCeoCycle(
+  options: CeoCycleOptions = {}
+): Promise<CeoCycleResult> {
   const startedAt = new Date();
   const limit = options.limit ?? 10;
 
-  const researching = await prisma.opportunity.findMany({
-    where: { status: "researching" },
-    orderBy: { createdAt: "asc" },
+  const validated = await prisma.opportunity.findMany({
+    where: { status: "validated" },
+    orderBy: { opportunityScore: "desc" },
     take: limit,
   });
 
   console.log(
-    `[pipeline:validator] cycle start — ${researching.length} researching opportunity(ies) in batch`
+    `[pipeline:ceo] cycle start — ${validated.length} validated opportunity(ies) in batch`
   );
 
-  const results: ValidatorCycleResult["results"] = [];
+  const results: CeoCycleResult["results"] = [];
   let approved = 0;
   let rejected = 0;
   let failed = 0;
 
-  for (const opportunity of researching) {
-    if (normalizeOpportunityStatus(opportunity.status) !== "researching") {
+  for (const opportunity of validated) {
+    if (normalizeOpportunityStatus(opportunity.status) !== "validated") {
       continue;
     }
 
-    const decision = evaluateValidationDecision(opportunity);
+    const decision = evaluateCeoDecision(opportunity);
     console.log(
-      `[pipeline:validator] opportunity #${opportunity.id} "${opportunity.productName}" ` +
+      `[pipeline:ceo] opportunity #${opportunity.id} "${opportunity.productName}" ` +
         `score=${opportunity.opportunityScore ?? "n/a"} decision=${decision}`
     );
-    const outcome = await validateOpportunity({
+
+    const outcome = await processCeoDecision({
       opportunityId: opportunity.id,
       decision,
     });
@@ -79,7 +80,7 @@ export async function runValidatorCycle(
     } else {
       failed += 1;
       console.warn(
-        `[pipeline:validator] opportunity #${opportunity.id} failed: ${outcome.message}`
+        `[pipeline:ceo] opportunity #${opportunity.id} failed: ${outcome.message}`
       );
       results.push({
         opportunityId: opportunity.id,
@@ -91,7 +92,7 @@ export async function runValidatorCycle(
   }
 
   console.log(
-    `[pipeline:validator] cycle done — processed=${results.length} approved=${approved} ` +
+    `[pipeline:ceo] cycle done — processed=${results.length} approved=${approved} ` +
       `rejected=${rejected} failed=${failed}`
   );
 

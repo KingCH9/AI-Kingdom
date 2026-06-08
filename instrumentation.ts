@@ -10,4 +10,9 @@ export async function register() {
 
   const { logStartupDiagnostics } = await import("./lib/ops/diagnostics");
   await logStartupDiagnostics();
+
+  const { startEmpirePipelineScheduler } = await import(
+    "./lib/ops/pipeline-scheduler"
+  );
+  startEmpirePipelineScheduler();
 }

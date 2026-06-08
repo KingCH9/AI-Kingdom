@@ -19,7 +19,9 @@ export function computeEmpireQueueStats(
   ).length;
 
   return {
+    /** Opportunities awaiting Atlas validation (status=researching). */
     researchQueue: researching,
+    /** Same as researchQueue — validator acts on researching items. */
     validatorQueue: researching,
     ceoQueue: opportunities.filter(
       (item) => normalizeOpportunityStatus(item.status) === "validated"

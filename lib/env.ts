@@ -189,6 +189,35 @@ export function isValidatorAutomationEnabled(): boolean {
   return readEnvFlag("ENABLE_VALIDATOR_AUTOMATION");
 }
 
+/**
+ * In-process opportunity pipeline (validator + CEO cycles) on the web service.
+ * Enabled by default in production / Railway. Set ENABLE_EMPIRE_PIPELINE=false to disable.
+ */
+export function isEmpirePipelineEnabled(): boolean {
+  const raw = process.env.ENABLE_EMPIRE_PIPELINE?.trim().toLowerCase();
+  if (raw === "false" || raw === "0" || raw === "no") {
+    return false;
+  }
+  if (raw === "true" || raw === "1" || raw === "yes") {
+    return true;
+  }
+  return (
+    isProduction() ||
+    Boolean(process.env.RAILWAY_ENVIRONMENT) ||
+    Boolean(process.env.RAILWAY_PROJECT_ID)
+  );
+}
+
+/** Pipeline tick interval in milliseconds. Default: 60s. */
+export function getPipelineIntervalMs(): number {
+  return readEnvInt("PIPELINE_INTERVAL_MS", 60_000);
+}
+
+/** Max opportunities processed per pipeline stage per tick. Default: 20. */
+export function getPipelineBatchSize(): number {
+  return readEnvInt("PIPELINE_BATCH_SIZE", 20);
+}
+
 /** Max opportunities per validator cycle. Default: 10. */
 export function getValidatorBatchSize(): number {
   return readEnvInt("VALIDATOR_BATCH_SIZE", 10);

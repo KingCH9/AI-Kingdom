@@ -89,6 +89,11 @@ export async function updateOpportunityStatus(
 
   const fromStatus = normalizeOpportunityStatus(existing.status);
 
+  console.log(
+    `[pipeline:transition] opportunity #${opportunityId} "${existing.productName}" ` +
+      `${fromStatus} → ${newStatus} (actor=${actor})`
+  );
+
   if (fromStatus === newStatus) {
     return { success: false, message: "Opportunity is already in that status" };
   }
