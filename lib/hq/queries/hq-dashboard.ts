@@ -21,7 +21,8 @@ import {
 import { getFinanceSnapshot } from "../finance/queries";
 import { getPerformanceSummary } from "../performance/performance-queries";
 import { getEmpireScoreV2Summary } from "../empire/score-v2-dashboard";
-import { getTopPerformersSummary } from "../workstations";
+import { getAgentProfileDefinition } from "../workstations/agent-profiles";
+import { getScoutProfileDefinition } from "../workstations/scout-profiles";
 import { getEmpireScoreSnapshot, getAtlasEmpireSummary, getAthenaEmpireSummary, getForgeEmpireSummary, getNovaEmpireSummary, getMercuryEmpireSummary } from "../empire/queries";
 
 export type HqDepartmentSnapshot = {
@@ -390,7 +391,6 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     mercurySummary,
     performanceSummary,
     empireScoreV2Summary,
-    topPerformersSummary,
   ] = await Promise.all([
     prisma.department.findMany({
       include: {
@@ -436,7 +436,6 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     getMercuryEmpireSummary(),
     getPerformanceSummary(),
     getEmpireScoreV2Summary(),
-    getTopPerformersSummary(),
   ]);
 
   const pending =
@@ -743,38 +742,48 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
       totalScouts: performanceSummary.totalScouts,
     },
     topPerformersSummary: {
-      topAgent: topPerformersSummary.topAgent
+      topAgent: performanceSummary.topAgent
         ? {
-            agentKey: topPerformersSummary.topAgent.agentKey,
-            name: topPerformersSummary.topAgent.name,
-            score: topPerformersSummary.topAgent.score,
-            level: topPerformersSummary.topAgent.level,
-            xp: topPerformersSummary.topAgent.xp,
+            agentKey: performanceSummary.topAgent.agentKey,
+            name:
+              getAgentProfileDefinition(performanceSummary.topAgent.agentKey)
+                ?.name ?? performanceSummary.topAgent.agentKey,
+            score: performanceSummary.topAgent.score,
+            level: performanceSummary.topAgent.level,
+            xp: performanceSummary.topAgent.xp,
           }
         : null,
-      topScout: topPerformersSummary.topScout
+      topScout: performanceSummary.topScout
         ? {
-            scoutKey: topPerformersSummary.topScout.scoutKey,
-            name: topPerformersSummary.topScout.name,
-            score: topPerformersSummary.topScout.score,
-            level: topPerformersSummary.topScout.level,
-            xp: topPerformersSummary.topScout.xp,
+            scoutKey: performanceSummary.topScout.scoutKey,
+            name:
+              getScoutProfileDefinition(performanceSummary.topScout.scoutKey)
+                ?.name ?? performanceSummary.topScout.scoutKey,
+            score: performanceSummary.topScout.score,
+            level: performanceSummary.topScout.level,
+            xp: performanceSummary.topScout.xp,
           }
         : null,
-      highestXpAgent: topPerformersSummary.highestXpAgent
+      highestXpAgent: performanceSummary.highestXpAgent
         ? {
-            agentKey: topPerformersSummary.highestXpAgent.agentKey,
-            name: topPerformersSummary.highestXpAgent.name,
-            xp: topPerformersSummary.highestXpAgent.xp,
-            level: topPerformersSummary.highestXpAgent.level,
+            agentKey: performanceSummary.highestXpAgent.agentKey,
+            name:
+              getAgentProfileDefinition(
+                performanceSummary.highestXpAgent.agentKey
+              )?.name ?? performanceSummary.highestXpAgent.agentKey,
+            xp: performanceSummary.highestXpAgent.xp,
+            level: performanceSummary.highestXpAgent.level,
           }
         : null,
-      highestRevenueAgent: topPerformersSummary.highestRevenueAgent
+      highestRevenueAgent: performanceSummary.highestRevenueAgent
         ? {
-            agentKey: topPerformersSummary.highestRevenueAgent.agentKey,
-            name: topPerformersSummary.highestRevenueAgent.name,
+            agentKey: performanceSummary.highestRevenueAgent.agentKey,
+            name:
+              getAgentProfileDefinition(
+                performanceSummary.highestRevenueAgent.agentKey
+              )?.name ?? performanceSummary.highestRevenueAgent.agentKey,
             revenueInfluenced:
-              topPerformersSummary.highestRevenueAgent.revenueInfluenced,
+              performanceSummary.highestRevenueAgent.revenueInfluenced,
           }
         : null,
     },

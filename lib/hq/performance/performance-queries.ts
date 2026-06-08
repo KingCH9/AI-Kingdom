@@ -157,6 +157,13 @@ export async function getPerformanceSummary() {
     highestLevel: snapshot.summary.highestLevel,
     highestLevelAgent: snapshot.summary.highestLevelAgent,
     highestLevelScout: snapshot.summary.highestLevelScout,
+    highestXpAgent:
+      [...snapshot.agents].sort((a, b) => b.xp - a.xp || b.level - a.level)[0] ??
+      null,
+    highestRevenueAgent:
+      [...snapshot.agents].sort(
+        (a, b) => b.revenueInfluenced - a.revenueInfluenced
+      )[0] ?? null,
     topAgents: snapshot.topAgents.slice(0, 3),
     topScouts: snapshot.topScouts.slice(0, 3),
     totalAgents: snapshot.summary.totalAgents,
