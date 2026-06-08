@@ -358,3 +358,9 @@ export async function getMercuryEmpireSummary() {
   const { getMercurySummary } = await import("../mercury/profitability-dashboard");
   return getMercurySummary();
 }
+
+/** RAE revenue acceleration summary for empire/HQ integration. */
+export async function getRaeEmpireSummary() {
+  const { getRaeSummary } = await import("../revenue/rae-dashboard");
+  return getRaeSummary();
+}

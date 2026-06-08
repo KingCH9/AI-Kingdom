@@ -23,7 +23,7 @@ import { getPerformanceSummary } from "../performance/performance-queries";
 import { getEmpireScoreV2Summary } from "../empire/score-v2-dashboard";
 import { getAgentProfileDefinition } from "../workstations/agent-profiles";
 import { getScoutProfileDefinition } from "../workstations/scout-profiles";
-import { getEmpireScoreSnapshot, getAtlasEmpireSummary, getAthenaEmpireSummary, getForgeEmpireSummary, getNovaEmpireSummary, getMercuryEmpireSummary } from "../empire/queries";
+import { getEmpireScoreSnapshot, getAtlasEmpireSummary, getAthenaEmpireSummary, getForgeEmpireSummary, getNovaEmpireSummary, getMercuryEmpireSummary, getRaeEmpireSummary } from "../empire/queries";
 
 export type HqDepartmentSnapshot = {
   key: DepartmentKey;
@@ -227,6 +227,25 @@ export type HqSnapshot = {
     profitableMissions: number;
     fundRecommendations: number;
   };
+  raeSummary: {
+    periodMonth: string;
+    totalRevenueGbp: number;
+    monthlyRevenueGbp: number;
+    averageRoi: number | null;
+    flaggedCount: number;
+    scaleRecommendations: number;
+    topVenture: {
+      missionId: number;
+      title: string;
+      revenueGbp: number;
+      roi: number | null;
+    } | null;
+    topAgentContributor: {
+      agentKey: string;
+      name: string;
+      revenueContributed: number;
+    } | null;
+  };
   performanceSummary: {
     topAgent: {
       agentKey: string;
@@ -389,6 +408,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     forgeSummary,
     novaSummary,
     mercurySummary,
+    raeSummary,
     performanceSummary,
     empireScoreV2Summary,
   ] = await Promise.all([
@@ -434,6 +454,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     getForgeEmpireSummary(),
     getNovaEmpireSummary(),
     getMercuryEmpireSummary(),
+    getRaeEmpireSummary(),
     getPerformanceSummary(),
     getEmpireScoreV2Summary(),
   ]);
@@ -706,6 +727,16 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
       averageRoi: mercurySummary.averageRoi,
       profitableMissions: mercurySummary.profitableMissions,
       fundRecommendations: mercurySummary.fundRecommendations,
+    },
+    raeSummary: {
+      periodMonth: raeSummary.periodMonth,
+      totalRevenueGbp: raeSummary.totalRevenueGbp,
+      monthlyRevenueGbp: raeSummary.monthlyRevenueGbp,
+      averageRoi: raeSummary.averageRoi,
+      flaggedCount: raeSummary.flaggedCount,
+      scaleRecommendations: raeSummary.scaleRecommendations,
+      topVenture: raeSummary.topVenture,
+      topAgentContributor: raeSummary.topAgentContributor,
     },
     performanceSummary: {
       topAgent: performanceSummary.topAgent,

@@ -438,6 +438,49 @@ export default async function HqPage() {
       <section className="mb-10">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
           <div>
+            <h2 className="text-2xl font-bold">📈 Revenue Acceleration Engine</h2>
+            <p className="text-sm text-gray-500">
+              Period {hq.raeSummary.periodMonth} · {hq.raeSummary.flaggedCount}{" "}
+              flagged · advisory only
+            </p>
+          </div>
+          <Link href="/hq/revenue" className="text-sm text-blue-400 hover:underline">
+            RAE dashboard →
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl">
+          <div className="p-4 rounded-xl border border-green-500/30 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Monthly Revenue</p>
+            <p className="text-2xl font-bold text-green-400">
+              {formatGbp(hq.raeSummary.monthlyRevenueGbp)}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Avg ROI</p>
+            <p className="text-2xl font-bold">
+              {hq.raeSummary.averageRoi != null
+                ? `${hq.raeSummary.averageRoi}%`
+                : "—"}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Scale Recs</p>
+            <p className="text-2xl font-bold text-emerald-400">
+              {hq.raeSummary.scaleRecommendations}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Top Venture</p>
+            <p className="text-lg font-bold truncate">
+              {hq.raeSummary.topVenture?.title ?? "—"}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mb-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
             <h2 className="text-2xl font-bold">🏆 Top Performers</h2>
             <p className="text-sm text-gray-500">
               Agent & scout workstation leaders — read-only profiles
