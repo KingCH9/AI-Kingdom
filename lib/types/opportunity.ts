@@ -54,6 +54,17 @@ export interface ClaudeOpportunityResponse {
   nicheDifferentiation?: string;
   demandRationale?: string;
   competitionRationale?: string;
+  /** Phase D2 — structured demand signal (0–100). Not copied into demandScore directly. */
+  trendStrength?: number;
+  /** Phase D2 — Claude competition estimate (0–100, higher = more competitive). */
+  competitionEstimate?: number;
+  /** Phase D2 — structured demand decomposition. */
+  demandSignals?: {
+    searchGrowth?: number;
+    sourcingEase?: number;
+    otherFactors?: Record<string, number>;
+  };
   riskRating?: number;
+  /** Claude self-reported score — cross-check/log only after Phase D2. */
   opportunityScore?: number;
 }

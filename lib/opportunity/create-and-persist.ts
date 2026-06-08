@@ -1,7 +1,7 @@
 import type { Opportunity } from "@prisma/client";
 import { generateOpportunityWithClaude } from "@/lib/ai";
 import { prisma } from "@/lib/prisma";
-import { deriveScoresFromClaudeResponse } from "./derive-scores";
+import { deriveScoresFromClaudeResponse, deriveScoreMetadata } from "./derive-scores";
 import { deriveOpportunityCategory } from "./derive-category";
 import { buildOpportunityScores } from "./scoring";
 import { getInitialOpportunityStatus } from "./status";
@@ -46,6 +46,7 @@ export async function createOpportunityFromClaude(): Promise<CreateOpportunityRe
 
   const data = generated.data;
   const scoreInput = deriveScoresFromClaudeResponse(data);
+  const scoreMeta = deriveScoreMetadata(data, scoreInput);
   const { opportunityScore } = buildOpportunityScores(scoreInput);
   const status = getInitialOpportunityStatus();
   const category = deriveOpportunityCategory(data);
@@ -58,6 +59,24 @@ export async function createOpportunityFromClaude(): Promise<CreateOpportunityRe
 
   console.log(`[opportunity-generator] category=${rotationCategory}`);
   console.log(`[opportunity-generator] diversity-score=${diversityScore}`);
+  console.log(
+    `[opportunity-generator] demand-score=${scoreInput.demandScore} trend=${data.trendStrength ?? "n/a"} competition-estimate=${data.competitionEstimate ?? "n/a"}`
+  );
+  if (scoreMeta.claudeSelfScore != null) {
+    console.log(
+      `[opportunity-generator] claude-self-score=${scoreMeta.claudeSelfScore} (cross-check only)`
+    );
+  }
+  if (data.demandRationale?.trim()) {
+    console.log(
+      `[opportunity-generator] demand-rationale=${data.demandRationale.slice(0, 100)}`
+    );
+  }
+  if (data.competitionRationale?.trim()) {
+    console.log(
+      `[opportunity-generator] competition-rationale=${data.competitionRationale.slice(0, 100)}`
+    );
+  }
   if (data.nicheDifferentiation?.trim()) {
     console.log(
       `[opportunity-generator] niche-differentiation=${data.nicheDifferentiation.slice(0, 120)}`

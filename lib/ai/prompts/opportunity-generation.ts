@@ -76,6 +76,17 @@ ${doNotRepeatNiches}
 
 Avoid similar product concepts (same mechanism, same use case, same buyer, cosmetic rename).
 
+## STRUCTURED SCORING SIGNALS (Phase D2 — required)
+
+Provide honest numeric estimates (integers 0–100). These drive deterministic scoring — do NOT copy the same number into every field.
+
+- trendStrength — overall market momentum for this niche right now
+- competitionEstimate — how crowded the niche is (higher = more competitive)
+- demandSignals.searchGrowth — search/social demand trajectory
+- demandSignals.sourcingEase — ease of finding reliable suppliers
+- demandSignals.otherFactors — optional object of numeric sub-scores, e.g. { "adPotential": 75, "marginStability": 80 }
+- opportunityScore — your holistic self-assessment (logged for cross-check only; not used as demandScore)
+
 ## REQUIRED RATIONALE FIELDS
 
 You MUST explain in dedicated fields:
@@ -115,6 +126,13 @@ Return ONLY valid JSON in this exact format:
   "nicheDifferentiation": "",
   "demandRationale": "",
   "competitionRationale": "",
+  "trendStrength": 0,
+  "competitionEstimate": 0,
+  "demandSignals": {
+    "searchGrowth": 0,
+    "sourcingEase": 0,
+    "otherFactors": {}
+  },
   "riskRating": 0,
   "opportunityScore": 0
 }
