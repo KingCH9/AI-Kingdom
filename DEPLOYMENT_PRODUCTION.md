@@ -93,7 +93,7 @@ See **Production Environment Variable Checklist** below.
 Railway reads `railway.toml`:
 
 ```toml
-buildCommand  = npm ci && npx prisma generate && npm run build
+buildCommand  = npm run build
 releaseCommand = npx prisma migrate deploy
 startCommand  = npm start
 healthcheckPath = /api/health
