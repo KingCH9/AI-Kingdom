@@ -266,9 +266,19 @@ export function GenerateOpportunityButton({
 
       router.refresh();
 
-    } catch {
+    } catch (error) {
 
-      setError("Failed to connect to the server");
+      console.error("[GenerateOpportunityButton] server action failed:", error);
+
+      const message =
+
+        error instanceof Error
+
+          ? error.message
+
+          : "Server action failed — check Railway logs for [generate-opportunity]";
+
+      setError(message);
 
     } finally {
 

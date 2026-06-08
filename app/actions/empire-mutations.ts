@@ -29,17 +29,25 @@ import { AGENT_ROLES } from "@/lib/types";
 type MutationFailure = { success: false; message: string };
 
 async function runAuthorizedMutation<T>(
-  action: () => Promise<T>
+  action: () => Promise<T>,
+  scope: string
 ): Promise<T | MutationFailure> {
   try {
     await assertAuthorizedMutation();
-    return await action();
+    console.log(`[empire-mutation:${scope}] authorized — running`);
+    const result = await action();
+    console.log(`[empire-mutation:${scope}] completed`);
+    return result;
   } catch (error) {
     if (error instanceof UnauthorizedMutationError) {
+      console.warn(`[empire-mutation:${scope}] unauthorized`);
       return { success: false, message: error.message };
     }
 
-    throw error;
+    const message =
+      error instanceof Error ? error.message : "Mutation failed unexpectedly";
+    console.error(`[empire-mutation:${scope}] error:`, message, error);
+    return { success: false, message };
   }
 }
 
@@ -58,17 +66,24 @@ export async function authenticateEmpireSessionAction(token: string) {
 
 export async function generateOpportunityAction() {
   return runAuthorizedMutation(async () => {
+    console.log("[generateOpportunityAction] start");
     const result = await createOpportunityFromClaude();
 
     if (!result.success) {
+      console.warn(
+        `[generateOpportunityAction] failed: ${result.message}`
+      );
       return { success: false as const, message: result.message };
     }
 
+    console.log(
+      `[generateOpportunityAction] success id=${result.opportunity.id}`
+    );
     return {
       success: true as const,
       opportunityId: result.opportunity.id,
     };
-  });
+  }, "generateOpportunity");
 }
 
 export async function runTrendHunterAction() {
@@ -95,7 +110,7 @@ export async function runTrendHunterAction() {
       success: true as const,
       opportunityId: result.opportunity.id,
     };
-  });
+  }, "runTrendHunter");
 }
 
 export async function updateOpportunityStatusAction(input: {
@@ -115,7 +130,7 @@ export async function updateOpportunityStatusAction(input: {
     }
 
     return { success: true as const };
-  });
+  }, "updateOpportunityStatus");
 }
 
 export async function validateOpportunityAction(input: {
@@ -133,7 +148,7 @@ export async function validateOpportunityAction(input: {
     }
 
     return { success: true as const };
-  });
+  }, "validateOpportunity");
 }
 
 export async function executeTaskAction(taskId: number) {
@@ -149,7 +164,7 @@ export async function executeTaskAction(taskId: number) {
     }
 
     return { success: true as const };
-  });
+  }, "executeTask");
 }
 
 export async function executePendingTasksAction(limit = 20) {
@@ -163,7 +178,7 @@ export async function executePendingTasksAction(limit = 20) {
       failed: cycle.failed,
       deferred: cycle.deferred,
     };
-  });
+  }, "executePendingTasks");
 }
 
 export async function runValidatorCycleAction(limit = 20) {
@@ -177,7 +192,7 @@ export async function runValidatorCycleAction(limit = 20) {
       rejected: cycle.rejected,
       failed: cycle.failed,
     };
-  });
+  }, "runValidatorCycle");
 }
 
 export async function recordStoreRevenueAction(input: {
@@ -201,7 +216,7 @@ export async function recordStoreRevenueAction(input: {
           error instanceof Error ? error.message : "Failed to record revenue",
       };
     }
-  });
+  }, "recordStoreRevenue");
 }
 
 export async function recordOrderAction(input: {
@@ -229,7 +244,7 @@ export async function recordOrderAction(input: {
           error instanceof Error ? error.message : "Failed to record order",
       };
     }
-  });
+  }, "recordOrder");
 }
 
 export async function createStripeCheckoutAction(input: {
@@ -259,5 +274,5 @@ export async function createStripeCheckoutAction(input: {
               : "Failed to create Stripe checkout",
       };
     }
-  });
+  }, "createStripeCheckout");
 }

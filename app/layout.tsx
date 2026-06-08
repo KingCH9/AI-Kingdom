@@ -2,6 +2,9 @@ import "./globals.css";
 import Link from "next/link";
 import { EmpireMutationAccess } from "@/components/empire-mutation-access";
 
+/** Claude opportunity generation can take 30–120s. */
+export const maxDuration = 300;
+
 export default function RootLayout({
   children,
 }: {

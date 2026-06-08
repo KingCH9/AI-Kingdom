@@ -44,33 +44,45 @@ export async function createOpportunityFromClaude(): Promise<CreateOpportunityRe
   const status = getInitialOpportunityStatus();
   const category = deriveOpportunityCategory(data);
 
-  const opportunity = await prisma.opportunity.create({
-    data: {
-      productName: data.productName || "",
-      productDescription: data.productDescription || "",
-      whyTrending: data.whyTrending || "",
-      targetCustomer: data.targetCustomer || "",
-      sellingPrice: data.sellingPrice || "",
-      estimatedCostPerUnit: data.estimatedCostPerUnit || "",
-      profitMargin: data.profitMargin || "",
-      supplierSearch: data.supplierSearch || "",
-      supplier: data.supplierSearch || "",
-      marketingAngles: JSON.stringify(data.marketingAngles || []),
-      tiktokIdeas: JSON.stringify(data.tiktokIdeas || []),
-      facebookAdIdeas: JSON.stringify(data.facebookAdIdeas || []),
-      alibabaKeywords: JSON.stringify(data.alibabaKeywords || []),
-      launchPlan: JSON.stringify(data.launchPlan || []),
-      category,
-      demandScore: scoreInput.demandScore,
-      competition: scoreInput.competition,
-      riskRating: scoreInput.riskRating,
-      opportunityScore,
-      status,
-    },
-  });
+  try {
+    console.log("[create-opportunity] Persisting to database");
+    const opportunity = await prisma.opportunity.create({
+      data: {
+        productName: data.productName || "",
+        productDescription: data.productDescription || "",
+        whyTrending: data.whyTrending || "",
+        targetCustomer: data.targetCustomer || "",
+        sellingPrice: data.sellingPrice || "",
+        estimatedCostPerUnit: data.estimatedCostPerUnit || "",
+        profitMargin: data.profitMargin || "",
+        supplierSearch: data.supplierSearch || "",
+        supplier: data.supplierSearch || "",
+        marketingAngles: JSON.stringify(data.marketingAngles || []),
+        tiktokIdeas: JSON.stringify(data.tiktokIdeas || []),
+        facebookAdIdeas: JSON.stringify(data.facebookAdIdeas || []),
+        alibabaKeywords: JSON.stringify(data.alibabaKeywords || []),
+        launchPlan: JSON.stringify(data.launchPlan || []),
+        category,
+        demandScore: scoreInput.demandScore,
+        competition: scoreInput.competition,
+        riskRating: scoreInput.riskRating,
+        opportunityScore,
+        status,
+      },
+    });
 
-  return {
-    success: true,
-    opportunity,
-  };
+    console.log(`[create-opportunity] Saved opportunity id=${opportunity.id}`);
+    return {
+      success: true,
+      opportunity,
+    };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Database save failed";
+    console.error("[create-opportunity] Prisma error:", message, error);
+    return {
+      success: false,
+      message: `Failed to save opportunity: ${message}`,
+    };
+  }
 }
