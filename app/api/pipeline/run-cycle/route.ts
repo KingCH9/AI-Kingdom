@@ -26,6 +26,7 @@ export async function POST(request: Request) {
       ceo: {
         processed: cycle.ceo.processed,
         approved: cycle.ceo.approved,
+        held: cycle.ceo.held,
         rejected: cycle.ceo.rejected,
         failed: cycle.ceo.failed,
       },

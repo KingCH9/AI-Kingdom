@@ -3,16 +3,18 @@ import { normalizeOpportunityStatus } from "./status";
 import {
   evaluateCeoDecision,
   processCeoDecision,
+  type CeoDecision,
 } from "./evaluate-ceo-decision";
 
 export type CeoCycleResult = {
   processed: number;
   approved: number;
   rejected: number;
+  held: number;
   failed: number;
   results: Array<{
     opportunityId: number;
-    decision: "approve" | "reject";
+    decision: CeoDecision;
     success: boolean;
     message?: string;
   }>;
@@ -47,6 +49,7 @@ export async function runCeoCycle(
   const results: CeoCycleResult["results"] = [];
   let approved = 0;
   let rejected = 0;
+  let held = 0;
   let failed = 0;
 
   for (const opportunity of validated) {
@@ -59,6 +62,16 @@ export async function runCeoCycle(
       `[pipeline:ceo] opportunity #${opportunity.id} "${opportunity.productName}" ` +
         `score=${opportunity.opportunityScore ?? "n/a"} decision=${decision}`
     );
+
+    if (decision === "hold") {
+      held += 1;
+      results.push({
+        opportunityId: opportunity.id,
+        decision,
+        success: true,
+      });
+      continue;
+    }
 
     const outcome = await processCeoDecision({
       opportunityId: opportunity.id,
@@ -93,13 +106,14 @@ export async function runCeoCycle(
 
   console.log(
     `[pipeline:ceo] cycle done — processed=${results.length} approved=${approved} ` +
-      `rejected=${rejected} failed=${failed}`
+      `held=${held} rejected=${rejected} failed=${failed}`
   );
 
   return {
     processed: results.length,
     approved,
     rejected,
+    held,
     failed,
     results,
     startedAt,

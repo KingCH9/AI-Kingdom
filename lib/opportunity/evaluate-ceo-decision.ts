@@ -1,26 +1,37 @@
 import type { Opportunity } from "@prisma/client";
-import { meetsLaunchReadyCriteria } from "./status";
+import { meetsLaunchReadyCriteria, meetsValidatedCriteria } from "./status";
 import { opportunityToScoreInput } from "./to-score-input";
 import { updateOpportunityStatus } from "./update-status";
 
-export type CeoDecision = "approve" | "reject";
+export type CeoDecision = "approve" | "reject" | "hold";
 
 export type ProcessCeoDecisionInput = {
   opportunityId: number;
-  decision: CeoDecision;
+  decision: Exclude<CeoDecision, "hold">;
 };
 
 export type ProcessCeoDecisionResult =
-  | { success: true; opportunity: Opportunity; decision: CeoDecision }
+  | { success: true; opportunity: Opportunity; decision: Exclude<CeoDecision, "hold"> }
   | { success: false; message: string };
 
 /**
  * Deterministic CEO recommendation from existing score data.
- * Approve when launch_ready gates pass (score, risk, competition, margin).
+ * - approve → launch_ready when all launch gates pass
+ * - reject → killed only when below validated threshold (Atlas should not have passed)
+ * - hold → remain in validated queue for manual CEO review
  */
 export function evaluateCeoDecision(opportunity: Opportunity): CeoDecision {
   const input = opportunityToScoreInput(opportunity);
-  return meetsLaunchReadyCriteria(input) ? "approve" : "reject";
+
+  if (meetsLaunchReadyCriteria(input)) {
+    return "approve";
+  }
+
+  if (!meetsValidatedCriteria(input)) {
+    return "reject";
+  }
+
+  return "hold";
 }
 
 /**

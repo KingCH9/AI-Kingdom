@@ -62,6 +62,7 @@ function emptyCeoResult(startedAt: Date): CeoCycleResult {
     processed: 0,
     approved: 0,
     rejected: 0,
+    held: 0,
     failed: 0,
     results: [],
     startedAt,
