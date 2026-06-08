@@ -29,6 +29,8 @@ export async function runTaskWorkerCycle(
   const startedAt = new Date();
   const limit = options.limit ?? 10;
 
+  console.log("[task-worker] cycle start");
+
   const pending = await prisma.task.findMany({
     where: { status: TASK_STATUSES.PENDING },
     orderBy: { createdAt: "asc" },
@@ -42,17 +44,36 @@ export async function runTaskWorkerCycle(
   let deferred = 0;
 
   for (const task of ordered) {
+    console.log(
+      `[task-worker] executing task #${task.id} "${task.title}" (agent=${task.agent})`
+    );
+
     const result = await executeTask(task.id);
     results.push(result);
 
     if (result.success) {
       succeeded += 1;
+      console.log(
+        `[task-worker] completed task #${task.id} "${task.title}"`
+      );
     } else if ("deferred" in result && result.deferred) {
       deferred += 1;
+      console.log(
+        `[task-worker] deferred task #${task.id} "${task.title}" — ${result.error ?? "dependency not met"}`
+      );
     } else {
       failed += 1;
+      console.log(
+        `[task-worker] failed task #${task.id} "${task.title}" — ${result.error ?? "unknown error"}`
+      );
     }
   }
+
+  const finishedAt = new Date();
+  console.log(
+    `[task-worker] cycle complete in ${finishedAt.getTime() - startedAt.getTime()}ms — ` +
+      `executed=${results.length} succeeded=${succeeded} failed=${failed} deferred=${deferred}`
+  );
 
   return {
     executed: results.length,
@@ -61,7 +82,7 @@ export async function runTaskWorkerCycle(
     deferred,
     results,
     startedAt,
-    finishedAt: new Date(),
+    finishedAt,
   };
 }
 

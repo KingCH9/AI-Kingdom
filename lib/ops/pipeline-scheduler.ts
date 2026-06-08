@@ -10,7 +10,7 @@ const globalForPipeline = global as unknown as {
 };
 
 /**
- * Starts in-process opportunity pipeline automation (validator + CEO cycles).
+ * Starts in-process empire pipeline automation (validator → CEO → task worker).
  * Runs on Railway/production by default — no separate worker process required.
  */
 export function startEmpirePipelineScheduler(): void {
@@ -27,7 +27,7 @@ export function startEmpirePipelineScheduler(): void {
   const intervalMs = getPipelineIntervalMs();
 
   console.log(
-    `[pipeline] scheduler started — interval=${intervalMs}ms (validator → CEO)`
+    `[pipeline] scheduler started — interval=${intervalMs}ms (validator → CEO → task worker)`
   );
 
   const tick = async () => {

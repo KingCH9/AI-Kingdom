@@ -1,3 +1,5 @@
+import { runTaskWorkerCycle } from "@/lib/agents/execution/runner";
+import type { TaskWorkerCycleResult } from "@/lib/agents/execution/runner";
 import { getPipelineBatchSize } from "@/lib/env";
 import { runCeoCycle, type CeoCycleResult } from "./ceo-cycle";
 import { runValidatorCycle, type ValidatorCycleResult } from "./validator-cycle";
@@ -5,6 +7,7 @@ import { runValidatorCycle, type ValidatorCycleResult } from "./validator-cycle"
 export type EmpirePipelineCycleResult = {
   validator: ValidatorCycleResult;
   ceo: CeoCycleResult;
+  tasks: TaskWorkerCycleResult;
   startedAt: Date;
   finishedAt: Date;
 };
@@ -16,8 +19,8 @@ export type EmpirePipelineCycleOptions = {
 };
 
 /**
- * Full opportunity status pipeline:
- * researching → validated/killed (Atlas) → launch_ready/killed (Alpha).
+ * Full empire pipeline:
+ * researching → validated/killed (Atlas) → launch_ready/killed (Alpha) → task execution.
  */
 export async function runEmpirePipelineCycle(
   options: EmpirePipelineCycleOptions = {}
@@ -35,14 +38,17 @@ export async function runEmpirePipelineCycle(
     ? emptyCeoResult(startedAt)
     : await runCeoCycle({ limit });
 
+  const tasks = await runTaskWorkerCycle({ limit });
+
   const finishedAt = new Date();
   console.log(
     `[pipeline] empire cycle done in ${finishedAt.getTime() - startedAt.getTime()}ms — ` +
       `validator(approved=${validator.approved}, rejected=${validator.rejected}) ` +
-      `ceo(approved=${ceo.approved}, rejected=${ceo.rejected})`
+      `ceo(approved=${ceo.approved}, rejected=${ceo.rejected}) ` +
+      `tasks(succeeded=${tasks.succeeded}, failed=${tasks.failed}, deferred=${tasks.deferred})`
   );
 
-  return { validator, ceo, startedAt, finishedAt };
+  return { validator, ceo, tasks, startedAt, finishedAt };
 }
 
 function emptyValidatorResult(startedAt: Date): ValidatorCycleResult {

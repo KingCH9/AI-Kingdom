@@ -28,6 +28,7 @@ export const AGENT_NAMES = {
   STORE_BUILDER: "Forge",
   VALIDATOR: "Atlas",
   MARKETING_MANAGER: "Gamma",
+  OPERATIONS_MANAGER: "Ops",
 } as const;
 
 export type AgentName = (typeof AGENT_NAMES)[keyof typeof AGENT_NAMES];

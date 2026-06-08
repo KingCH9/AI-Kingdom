@@ -11,6 +11,9 @@ export async function register() {
   const { logStartupDiagnostics } = await import("./lib/ops/diagnostics");
   await logStartupDiagnostics();
 
+  const { ensureCoreLaunchAgents } = await import("./lib/ops/agent-bootstrap");
+  await ensureCoreLaunchAgents();
+
   const { startEmpirePipelineScheduler } = await import(
     "./lib/ops/pipeline-scheduler"
   );
