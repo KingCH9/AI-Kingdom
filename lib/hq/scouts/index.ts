@@ -23,6 +23,13 @@ export function getScoutByVentureType(
   return SCOUT_REGISTRY.find((s) => s.ventureTypeKey === ventureTypeKey);
 }
 
+export function getScoutByKey(scoutKey: string): ScoutDefinition | undefined {
+  return SCOUT_REGISTRY.find((s) => s.key === scoutKey);
+}
+
+export { generateScoutOpportunity, generateAllScoutOpportunities } from "./opportunity-generator";
+export type { ScoutOpportunityDraft } from "./opportunity-generator";
+
 export function buildScoutSnapshots(input: {
   missionsByVentureType: Map<string, number>;
   opportunitiesByVentureType: Map<string, number>;

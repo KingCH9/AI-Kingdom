@@ -3,7 +3,8 @@ import { computeEmpireQueueStats } from "@/lib/opportunity/compute-queue-stats";
 import { TASK_STATUSES } from "@/lib/tasks/constants";
 import { getDepartmentBudgetSummary } from "../finance/queries";
 import { currentBudgetPeriodMonth, MISSION_STATUSES } from "../constants";
-import { buildScoutSnapshots } from "../scouts";
+import { buildScoutSnapshots, getScoutByKey } from "../scouts";
+import { SCOUT_CATEGORY_PREFIX } from "../scouts/opportunity-generator";
 import { revenueStreamToVentureTypeKey } from "../seed/venture-engine";
 
 export type DepartmentScore = {
@@ -230,6 +231,28 @@ export async function getEmpireScoreSnapshot(): Promise<EmpireScoreSnapshot> {
     opportunitiesByVentureType.set(
       key,
       (opportunitiesByVentureType.get(key) ?? 0) + 1
+    );
+  }
+
+  const scoutOpportunities = await prisma.opportunity.findMany({
+    where: { category: { startsWith: SCOUT_CATEGORY_PREFIX } },
+    select: { category: true },
+  });
+  const scoutOpportunitiesByVentureType = new Map<string, number>();
+  for (const opp of scoutOpportunities) {
+    const scoutKey = opp.category?.slice(SCOUT_CATEGORY_PREFIX.length) ?? "";
+    const scout = getScoutByKey(scoutKey);
+    if (!scout) continue;
+    scoutOpportunitiesByVentureType.set(
+      scout.ventureTypeKey,
+      (scoutOpportunitiesByVentureType.get(scout.ventureTypeKey) ?? 0) + 1
+    );
+    opportunitiesByVentureType.set(
+      scout.ventureTypeKey,
+      Math.max(
+        opportunitiesByVentureType.get(scout.ventureTypeKey) ?? 0,
+        scoutOpportunitiesByVentureType.get(scout.ventureTypeKey) ?? 0
+      )
     );
   }
 

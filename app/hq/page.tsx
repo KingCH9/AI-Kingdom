@@ -213,7 +213,11 @@ export default async function HqPage() {
       </section>
 
       <section className="mb-10">
-        <h2 className="text-2xl font-bold mb-4">Athena Scouts</h2>
+        <h2 className="text-2xl font-bold mb-2">Athena Opportunity Factory</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Six venture scouts — manual triggers only. Registry status reflects missions
+          and scout-generated opportunities per venture type.
+        </p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {hq.athenaScouts.map((scout) => (
             <article
@@ -228,7 +232,8 @@ export default async function HqPage() {
               </div>
               <p className="text-xs text-gray-500 capitalize">{scout.ventureTypeKey}</p>
               <p className="text-sm mt-2">
-                {scout.missions} missions · {scout.opportunitiesDiscovered} opportunities
+                {scout.missions} missions · {scout.scoutOpportunitiesGenerated}{" "}
+                scout opportunities
               </p>
             </article>
           ))}

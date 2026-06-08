@@ -133,6 +133,7 @@ export type HqSnapshot = {
     status: string;
     missions: number;
     opportunitiesDiscovered: number;
+    scoutOpportunitiesGenerated: number;
   }>;
   empireScoreSummary: {
     score: number;
@@ -437,6 +438,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
       status: s.status,
       missions: s.missions,
       opportunitiesDiscovered: s.opportunitiesDiscovered,
+      scoutOpportunitiesGenerated: s.opportunitiesDiscovered,
     })),
     empireScoreSummary: {
       score: empireSnapshot.empireScore,

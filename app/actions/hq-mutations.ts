@@ -12,6 +12,7 @@ import {
   updateMission,
 } from "@/lib/hq/missions/mission-service";
 import { createMissionFromTemplate } from "@/lib/hq/missions/create-from-template";
+import { createMissionFromScout } from "@/lib/hq/missions/mission-from-scout";
 
 type MutationFailure = { success: false; message: string };
 
@@ -143,4 +144,25 @@ export async function createMissionFromTemplateAction(input: {
 
     return { success: true as const, missionId: result.mission.id };
   }, "createMissionFromTemplate");
+}
+
+export async function createMissionFromScoutAction(input: {
+  scoutKey: string;
+  title?: string;
+  opportunityId?: number;
+}) {
+  return runAuthorizedMutation(async () => {
+    const result = await createMissionFromScout({
+      scoutKey: input.scoutKey,
+      title: input.title,
+      opportunityId: input.opportunityId,
+      agentPersona: "operator",
+    });
+
+    if (!result.success) {
+      return { success: false as const, message: result.message };
+    }
+
+    return { success: true as const, missionId: result.mission.id };
+  }, "createMissionFromScout");
 }

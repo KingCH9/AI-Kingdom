@@ -107,6 +107,14 @@ export default async function MissionDetailPage({
                 <dt className="text-gray-500">Template</dt>
                 <dd>{mission.ventureTemplate?.name ?? "—"}</dd>
               </div>
+              {mission.opportunity?.category?.startsWith("hq_scout:") && (
+                <div>
+                  <dt className="text-gray-500">Scout source</dt>
+                  <dd className="capitalize">
+                    {mission.opportunity.category.replace("hq_scout:", "").replace(/_/g, " ")}
+                  </dd>
+                </div>
+              )}
               <div>
                 <dt className="text-gray-500">Target ROI</dt>
                 <dd>

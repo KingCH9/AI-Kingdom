@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { CreateMissionForm } from "@/components/hq/create-mission-form";
 import { CreateMissionFromTemplateForm } from "@/components/hq/create-mission-from-template-form";
+import { GenerateFromScoutForm } from "@/components/hq/generate-from-scout-form";
 import { MissionStatusBadge } from "@/components/hq/mission-ui";
+import { SCOUT_REGISTRY } from "@/lib/hq/scouts";
 import { MISSION_STATUSES } from "@/lib/hq/constants";
 import { listVentureTemplates } from "@/lib/hq/missions/create-from-template";
 import { listMissions } from "@/lib/hq/missions/mission-service";
@@ -52,7 +54,7 @@ export default async function MissionBoardPage({
             constitution warnings (soft mode).
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 items-start">
           <CreateMissionForm departments={departments} />
           <CreateMissionFromTemplateForm
             templates={templates.map((t) => ({
@@ -60,6 +62,13 @@ export default async function MissionBoardPage({
               key: t.key,
               name: t.name,
               ventureTypeName: t.ventureType.name,
+            }))}
+          />
+          <GenerateFromScoutForm
+            scouts={SCOUT_REGISTRY.map((s) => ({
+              key: s.key,
+              displayName: s.displayName,
+              ventureTypeKey: s.ventureTypeKey,
             }))}
           />
         </div>
