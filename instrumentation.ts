@@ -14,6 +14,16 @@ export async function register() {
   const { ensureCoreLaunchAgents } = await import("./lib/ops/agent-bootstrap");
   await ensureCoreLaunchAgents();
 
+  const { ensureMissingProductPages } = await import(
+    "./lib/ops/product-page-bootstrap"
+  );
+  void ensureMissingProductPages().catch((error) => {
+    console.error(
+      "[product-page-agent] bootstrap error:",
+      error instanceof Error ? error.message : error
+    );
+  });
+
   const { startEmpirePipelineScheduler } = await import(
     "./lib/ops/pipeline-scheduler"
   );

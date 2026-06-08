@@ -7,3 +7,6 @@ export const OPPORTUNITY_GENERATION_MODEL = "claude-sonnet-4-6";
 export const DEFAULT_MAX_TOKENS = 500;
 
 export const OPPORTUNITY_GENERATION_MAX_TOKENS = 4000;
+
+/** Max tokens for product page generation (structured JSON sales copy). */
+export const PRODUCT_PAGE_MAX_TOKENS = 4096;

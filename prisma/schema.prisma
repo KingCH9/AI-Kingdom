@@ -22,6 +22,7 @@ model Agent {
 model Store {
   id            Int      @id @default(autoincrement())
   name          String
+  slug          String?  @unique
   niche         String
   revenue       Float    @default(0)
   status        String
@@ -30,6 +31,7 @@ model Store {
 
   opportunity Opportunity? @relation(fields: [opportunityId], references: [id])
   products    Product[]
+  productPage ProductPage?
   revenues    Revenue[]
   agentLogs   AgentLog[]
   customers   Customer[]
@@ -87,7 +89,30 @@ model Product {
   storeId   Int
   createdAt DateTime @default(now())
 
-  store Store @relation(fields: [storeId], references: [id])
+  store       Store        @relation(fields: [storeId], references: [id])
+  productPage ProductPage?
+}
+
+model ProductPage {
+  id              Int      @id @default(autoincrement())
+  storeId         Int      @unique
+  productId       Int?     @unique
+  heroHeadline    String
+  subheadline     String
+  salesCopy       String
+  benefits        String   @default("[]")
+  features        String   @default("[]")
+  faq             String   @default("[]")
+  ctaText         String   @default("Buy Now")
+  seoTitle        String
+  seoDescription  String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  store   Store    @relation(fields: [storeId], references: [id])
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@index([storeId])
 }
 
 model Revenue {

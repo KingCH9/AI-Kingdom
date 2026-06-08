@@ -7,6 +7,7 @@ import {
   STORE_STATUSES,
   syncStoreStatusForOpportunity,
 } from "@/lib/store/sync-lifecycle";
+import { ensureProductPageForStore } from "@/lib/product-page/ensure-product-page";
 import { prisma } from "@/lib/prisma";
 import type { TaskExecutionContext } from "../types";
 
@@ -95,15 +96,20 @@ export async function executeMarketingPlanTask(
       STORE_STATUSES.LAUNCHED
     );
 
-    if (syncedStore) {
-      await ensureProductForStore(syncedStore.id, opportunity);
-    } else {
-      const store = await prisma.store.findFirst({
+    const store =
+      syncedStore ??
+      (await prisma.store.findFirst({
         where: { opportunityId: opportunity.id },
+      }));
+
+    if (store) {
+      const product = await ensureProductForStore(store.id, opportunity);
+      await ensureProductPageForStore({
+        store,
+        product,
+        opportunity,
+        marketingPlan: plan,
       });
-      if (store) {
-        await ensureProductForStore(store.id, opportunity);
-      }
     }
   }
 
