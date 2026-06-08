@@ -94,16 +94,16 @@ Railway reads `railway.toml`:
 
 ```toml
 buildCommand  = npm run build
-releaseCommand = npx prisma migrate deploy
-startCommand  = npm start
+releaseCommand = npm run db:migrate:deploy
+startCommand  = npm run start:production
 healthcheckPath = /api/health
 ```
 
 ### What happens on deploy
 
-1. **Build** — installs deps, generates Prisma client (PostgreSQL when `DATABASE_URL` is set), builds Next.js
-2. **Release** — runs `prisma migrate deploy` against PostgreSQL baseline
-3. **Start** — `instrumentation.ts` validates env + database connection, logs `[ai-empire startup]` diagnostics
+1. **Build** — installs deps, runs `prisma generate && next build`
+2. **Release** — runs `npm run db:migrate:deploy` (best-effort before start)
+3. **Start** — `npm run start:production` applies migrations, then starts Next.js; `instrumentation.ts` logs startup diagnostics
 4. **Health check** — Railway polls `/api/health`
 
 ### Manual deploy (CLI)

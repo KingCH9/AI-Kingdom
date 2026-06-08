@@ -246,11 +246,26 @@ async function checkMigrationDrift(): Promise<DiagnosticCheck> {
       `Latest: ${latest.migration_name}`
     );
   } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Could not read migration history";
+
+    if (
+      message.includes("_prisma_migrations") ||
+      message.includes("42P01")
+    ) {
+      return check(
+        "migrations",
+        "Database migrations",
+        "fail",
+        "Migrations not applied — run prisma migrate deploy"
+      );
+    }
+
     return check(
       "migrations",
       "Database migrations",
       "warn",
-      error instanceof Error ? error.message : "Could not read migration history"
+      message
     );
   }
 }
