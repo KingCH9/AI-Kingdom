@@ -52,11 +52,15 @@ async function checkDatabaseConnection(): Promise<DiagnosticCheck> {
         : "unknown";
     return check("database", "Database connection", "pass", `Connected (${provider})`);
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Connection failed";
+    const transient =
+      message.includes("too many clients") ||
+      message.includes("Too many database connections");
     return check(
       "database",
       "Database connection",
-      "fail",
-      error instanceof Error ? error.message : "Connection failed"
+      transient ? "warn" : "fail",
+      message
     );
   }
 }

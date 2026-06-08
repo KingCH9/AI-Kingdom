@@ -68,8 +68,10 @@ export async function register() {
     await ensureMissingMarketingAssets();
   });
 
-  const { startEmpirePipelineScheduler } = await import(
-    "./lib/ops/pipeline-scheduler"
-  );
-  startEmpirePipelineScheduler();
+  void runWithDbRetry("pipeline scheduler", async () => {
+    const { startEmpirePipelineScheduler } = await import(
+      "./lib/ops/pipeline-scheduler"
+    );
+    startEmpirePipelineScheduler();
+  });
 }
