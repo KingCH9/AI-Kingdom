@@ -66,6 +66,10 @@ export default function RootLayout({
                 👑 Empire
               </Link>
 
+              <Link href="/hq/empire/v2">
+                👑 Empire V2
+              </Link>
+
               <Link href="/validator">
                 🔬 Validator Queue
               </Link>

@@ -200,6 +200,48 @@ export default async function HqPage() {
       <section className="mb-10">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
           <div>
+            <h2 className="text-2xl font-bold">👑 Empire Score V2</h2>
+            <p className="text-sm text-gray-500">
+              {hq.empireScoreV2Summary.topStrength
+                ? `Strength: ${hq.empireScoreV2Summary.topStrength}`
+                : "Multi-engine empire health — V1 unchanged"}
+            </p>
+          </div>
+          <Link href="/hq/empire/v2" className="text-sm text-blue-400 hover:underline">
+            Empire V2 dashboard →
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl">
+          <div className="p-4 rounded-xl border border-purple-500/20 bg-gray-900 text-center">
+            <p className="text-xs text-gray-500 uppercase">Empire V2</p>
+            <p className="text-4xl font-bold text-purple-300">
+              {hq.empireScoreV2Summary.empireScoreV2}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Empire V1</p>
+            <p className="text-2xl font-bold text-amber-300">
+              {hq.empireScoreV2Summary.empireScoreV1}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Top Agent</p>
+            <p className="text-lg font-bold truncate capitalize">
+              {hq.empireScoreV2Summary.topAgent?.agentKey.replace(/_/g, " ") ?? "—"}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Top Dept</p>
+            <p className="text-lg font-bold truncate">
+              {hq.empireScoreV2Summary.topDepartment?.departmentName ?? "—"}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mb-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
             <h2 className="text-2xl font-bold">👔 Atlas CEO Advisor</h2>
             <p className="text-sm text-gray-500">
               Top priority {hq.atlasSummary.topPriorityScore} ·{" "}

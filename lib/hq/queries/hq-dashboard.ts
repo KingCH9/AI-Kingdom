@@ -20,6 +20,7 @@ import {
 } from "../missions/mission-service";
 import { getFinanceSnapshot } from "../finance/queries";
 import { getPerformanceSummary } from "../performance/performance-queries";
+import { getEmpireScoreV2Summary } from "../empire/score-v2-dashboard";
 import { getEmpireScoreSnapshot, getAtlasEmpireSummary, getAthenaEmpireSummary, getForgeEmpireSummary, getNovaEmpireSummary, getMercuryEmpireSummary } from "../empire/queries";
 
 export type HqDepartmentSnapshot = {
@@ -140,6 +141,23 @@ export type HqSnapshot = {
     score: number;
     activeVentures: number;
     launchReadyCount: number;
+  };
+  empireScoreV2Summary: {
+    empireScoreV2: number;
+    empireScoreV1: number;
+    topStrength: string | null;
+    topWeakness: string | null;
+    topAgent: {
+      agentKey: string;
+      department: string;
+      score: number;
+      level: number;
+    } | null;
+    topDepartment: {
+      departmentKey: string;
+      departmentName: string;
+      score: number;
+    } | null;
   };
   atlasSummary: {
     topPriorityScore: number;
@@ -343,6 +361,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     novaSummary,
     mercurySummary,
     performanceSummary,
+    empireScoreV2Summary,
   ] = await Promise.all([
     prisma.department.findMany({
       include: {
@@ -387,6 +406,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     getNovaEmpireSummary(),
     getMercuryEmpireSummary(),
     getPerformanceSummary(),
+    getEmpireScoreV2Summary(),
   ]);
 
   const pending =
@@ -564,6 +584,27 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
       score: empireSnapshot.empireScore,
       activeVentures: empireSnapshot.metrics.activeVentures,
       launchReadyCount: empireSnapshot.metrics.launchReadyCount,
+    },
+    empireScoreV2Summary: {
+      empireScoreV2: empireScoreV2Summary.empireScoreV2,
+      empireScoreV1: empireScoreV2Summary.empireScoreV1,
+      topStrength: empireScoreV2Summary.topStrength,
+      topWeakness: empireScoreV2Summary.topWeakness,
+      topAgent: empireScoreV2Summary.topAgent
+        ? {
+            agentKey: empireScoreV2Summary.topAgent.agentKey,
+            department: empireScoreV2Summary.topAgent.department,
+            score: empireScoreV2Summary.topAgent.score,
+            level: empireScoreV2Summary.topAgent.level,
+          }
+        : null,
+      topDepartment: empireScoreV2Summary.topDepartment
+        ? {
+            departmentKey: empireScoreV2Summary.topDepartment.departmentKey,
+            departmentName: empireScoreV2Summary.topDepartment.departmentName,
+            score: empireScoreV2Summary.topDepartment.score,
+          }
+        : null,
     },
     atlasSummary,
     athenaIntelligenceSummary: {
