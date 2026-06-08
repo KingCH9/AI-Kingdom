@@ -58,6 +58,10 @@ export default function RootLayout({
                 💰 Revenue
               </Link>
 
+              <Link href="/sales">
+                🛒 Sales
+              </Link>
+
               <Link href="/opportunities">
                 🔎 Opportunities
               </Link>

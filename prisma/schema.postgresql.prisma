@@ -37,6 +37,7 @@ model Store {
   productPage ProductPage?
   marketingLaunchPackage MarketingLaunchPackage?
   marketingAssets MarketingAsset[]
+  shopAnalytics ShopAnalyticsEvent[]
   revenues    Revenue[]
   agentLogs   AgentLog[]
   customers   Customer[]
@@ -67,6 +68,8 @@ model Order {
   id            Int      @id @default(autoincrement())
   storeId       Int
   customerId    Int
+  productId     Int?
+  opportunityId Int?
   externalId    String?
   source        String
   status        String   @default("paid")
@@ -77,14 +80,32 @@ model Order {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  store    Store    @relation(fields: [storeId], references: [id])
-  customer Customer @relation(fields: [customerId], references: [id])
-  revenues Revenue[]
+  store       Store        @relation(fields: [storeId], references: [id])
+  customer    Customer     @relation(fields: [customerId], references: [id])
+  product     Product?     @relation(fields: [productId], references: [id])
+  opportunity Opportunity? @relation(fields: [opportunityId], references: [id])
+  revenues    Revenue[]
 
   @@unique([source, externalId])
   @@index([storeId])
   @@index([customerId])
+  @@index([productId])
+  @@index([opportunityId])
   @@index([placedAt])
+}
+
+model ShopAnalyticsEvent {
+  id        Int      @id @default(autoincrement())
+  storeId   Int
+  eventType String
+  metadata  String   @default("{}")
+  createdAt DateTime @default(now())
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@index([storeId])
+  @@index([eventType])
+  @@index([createdAt])
 }
 
 model Product {
@@ -96,6 +117,7 @@ model Product {
 
   store       Store        @relation(fields: [storeId], references: [id])
   productPage ProductPage?
+  orders      Order[]
 }
 
 model ProductPage {
@@ -202,6 +224,7 @@ model Opportunity {
   updatedAt            DateTime @updatedAt
 
   stores               Store[]
+  orders               Order[]
   tasks                Task[]
   agentLogs            AgentLog[]
 

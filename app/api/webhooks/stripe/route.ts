@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   try {
     event = Stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (error) {
-    console.error("[stripe webhook] signature verification failed:", error);
+    console.error("[stripe] webhook signature verification failed:", error);
     return NextResponse.json(
       { success: false, message: "Invalid webhook signature" },
       { status: 400 }
@@ -42,6 +42,10 @@ export async function POST(request: Request) {
     const session = event.data.object as Stripe.Checkout.Session;
     const result = await processStripeCheckoutSession(session);
 
+    console.log(
+      `[stripe] webhook processed type=${event.type} order=${result.orderId} duplicate=${result.duplicate}`
+    );
+
     return NextResponse.json({
       success: true,
       duplicate: result.duplicate,
@@ -50,7 +54,7 @@ export async function POST(request: Request) {
       storeStatus: result.storeStatus,
     });
   } catch (error) {
-    console.error("[stripe webhook] processing failed:", error);
+    console.error("[stripe] webhook processing failed:", error);
     return NextResponse.json(
       {
         success: false,

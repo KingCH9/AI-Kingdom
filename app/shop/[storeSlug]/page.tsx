@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ShopBuyButton } from "@/components/product-page/shop-buy-button";
+import { recordShopEvent, SHOP_EVENT_TYPES } from "@/lib/commerce/shop-analytics";
 import { getShopPageBySlug } from "@/lib/product-page/queries";
 import { isStripeConfigured } from "@/lib/stripe/client";
 import { normalizeStoreStatus, STORE_STATUSES } from "@/lib/store/status";
@@ -60,6 +61,10 @@ export default async function ShopProductPage({
     notFound();
   }
 
+  await recordShopEvent(shop.store.id, SHOP_EVENT_TYPES.PAGE_VIEW, {
+    slug: storeSlug,
+  });
+
   const {
     store,
     product,
@@ -107,6 +112,7 @@ export default async function ShopProductPage({
             <div className="mt-8">
               <ShopBuyButton
                 storeId={store.id}
+                storeSlug={storeSlug}
                 label={page.ctaText}
                 disabledReason={disabledReason}
               />
@@ -244,6 +250,7 @@ export default async function ShopProductPage({
           <div className="mt-4 flex justify-center">
             <ShopBuyButton
               storeId={store.id}
+              storeSlug={storeSlug}
               label={page.ctaText}
               disabledReason={disabledReason}
             />

@@ -9,6 +9,8 @@ export type RecordOrderRevenueInput = {
   lineItemsJson?: string;
   placedAt?: Date;
   customerExternalId?: string | null;
+  productId?: number | null;
+  opportunityId?: number | null;
 };
 
 export type RecordOrderRevenueResult = {

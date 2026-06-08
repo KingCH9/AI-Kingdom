@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { createStripeCheckoutAction } from "@/app/actions/empire-mutations";
 
 export function ShopBuyButton({
   storeId,
+  storeSlug,
   label,
   disabledReason,
 }: {
   storeId: number;
+  storeSlug: string;
   label: string;
   disabledReason?: string | null;
 }) {
@@ -19,15 +20,30 @@ export function ShopBuyButton({
     setLoading(true);
     setError(null);
 
-    const result = await createStripeCheckoutAction({ storeId });
+    try {
+      const response = await fetch("/api/shop/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storeId, storeSlug }),
+      });
 
-    if (!result.success) {
-      setError(result.message ?? "Checkout unavailable");
+      const result = (await response.json()) as {
+        success?: boolean;
+        url?: string;
+        message?: string;
+      };
+
+      if (!response.ok || !result.success || !result.url) {
+        setError(result.message ?? "Checkout unavailable");
+        setLoading(false);
+        return;
+      }
+
+      window.location.href = result.url;
+    } catch {
+      setError("Checkout unavailable. Please try again.");
       setLoading(false);
-      return;
     }
-
-    window.location.href = result.url;
   }
 
   const disabled = Boolean(disabledReason) || loading;

@@ -6,6 +6,7 @@ import { normalizeStoreStatus, STORE_STATUSES } from "@/lib/store/status";
 export type CreateStripeCheckoutInput = {
   storeId: number;
   customerEmail?: string;
+  storeSlug?: string;
 };
 
 export type CreateStripeCheckoutResult = {
@@ -101,6 +102,10 @@ export async function createStripeCheckoutSession(
 
   const stripe = getStripeClient();
   const baseUrl = getAppUrl();
+  const slug = input.storeSlug ?? store.slug ?? String(store.id);
+  const successUrl = `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&store=${encodeURIComponent(slug)}`;
+  const cancelUrl = `${baseUrl}/checkout/cancel?store=${encodeURIComponent(slug)}`;
+
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     client_reference_id: String(store.id),
@@ -120,11 +125,15 @@ export async function createStripeCheckoutSession(
     metadata: {
       storeId: String(store.id),
       productId: String(product.id),
+      storeSlug: slug,
+      ...(store.opportunityId
+        ? { opportunityId: String(store.opportunityId) }
+        : {}),
       lineItems: JSON.stringify(lineItems),
       ...(email ? { customerEmail: email } : {}),
     },
-    success_url: `${baseUrl}/stores/${store.id}?checkout=success`,
-    cancel_url: `${baseUrl}/stores/${store.id}?checkout=cancelled`,
+    success_url: successUrl,
+    cancel_url: cancelUrl,
   });
 
   if (!session.url) {
@@ -133,6 +142,10 @@ export async function createStripeCheckoutSession(
       "STRIPE_SESSION_FAILED"
     );
   }
+
+  console.log(
+    `[stripe] checkout created store=${store.id} session=${session.id} product=${product.id}`
+  );
 
   return {
     url: session.url,

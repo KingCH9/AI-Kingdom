@@ -22,6 +22,12 @@ export function parseStoreIdFromStripeSession(
   return null;
 }
 
+function parseOptionalId(value: string | undefined): number | null {
+  if (!value) return null;
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
 export async function processStripeCheckoutSession(
   session: Stripe.Checkout.Session
 ) {
@@ -61,7 +67,10 @@ export async function processStripeCheckoutSession(
     }
   })();
 
-  return recordOrderRevenue({
+  const productId = parseOptionalId(session.metadata?.productId);
+  const opportunityId = parseOptionalId(session.metadata?.opportunityId);
+
+  const result = await recordOrderRevenue({
     storeId,
     email,
     name,
@@ -73,5 +82,19 @@ export async function processStripeCheckoutSession(
     placedAt: session.created ? new Date(session.created * 1000) : new Date(),
     customerExternalId:
       typeof session.customer === "string" ? session.customer : null,
+    productId,
+    opportunityId,
   });
+
+  if (!result.duplicate) {
+    console.log(
+      `[checkout] order completed store=${storeId} order=${result.orderId} amount=${total.toFixed(2)} ${currency}`
+    );
+  } else {
+    console.log(
+      `[checkout] duplicate session store=${storeId} order=${result.orderId}`
+    );
+  }
+
+  return result;
 }

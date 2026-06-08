@@ -59,6 +59,11 @@ export async function recordStoreRevenueTx(
 
   await syncOpportunityFromStore(input.storeId, db);
 
+  const currencySymbol = input.amount >= 0 ? "£" : "-£";
+  console.log(
+    `[revenue] recorded ${currencySymbol}${Math.abs(input.amount).toFixed(2)} store=${input.storeId} order=${input.orderId ?? "none"}`
+  );
+
   const refreshedStore = await db.store.findUnique({
     where: { id: input.storeId },
   });

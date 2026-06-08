@@ -3,7 +3,10 @@ import {
   createStripeCheckoutSession,
   StripeCheckoutError,
 } from "@/lib/commerce/create-stripe-checkout";
-import { requireApiKey } from "@/lib/auth/api-guard";
+import {
+  recordShopEvent,
+  SHOP_EVENT_TYPES,
+} from "@/lib/commerce/shop-analytics";
 
 function statusForCheckoutError(code: StripeCheckoutError["code"]): number {
   switch (code) {
@@ -20,39 +23,47 @@ function statusForCheckoutError(code: StripeCheckoutError["code"]): number {
   }
 }
 
-export async function POST(
-  request: Request,
-  context: { params: Promise<{ id: string }> }
-) {
-  const authError = requireApiKey(request);
-  if (authError) {
-    return authError;
-  }
+/** Public checkout for storefront visitors — no API key required. */
+export async function POST(request: Request) {
+  let storeId: number | undefined;
+  let customerEmail: string | undefined;
+  let storeSlug: string | undefined;
 
-  const { id } = await context.params;
-  const storeId = Number.parseInt(id, 10);
-  if (!Number.isFinite(storeId) || storeId <= 0) {
+  try {
+    const body = (await request.json()) as {
+      storeId?: number;
+      email?: string;
+      storeSlug?: string;
+    };
+    storeId = body.storeId;
+    customerEmail = body.email?.trim();
+    storeSlug = body.storeSlug?.trim();
+  } catch {
     return NextResponse.json(
-      { success: false, message: "Invalid store id" },
+      { success: false, message: "Invalid request body" },
       { status: 400 }
     );
   }
 
-  let customerEmail: string | undefined;
-  try {
-    const body = (await request.json()) as { email?: string };
-    customerEmail = body.email?.trim();
-  } catch {
-    customerEmail = undefined;
+  if (!storeId || !Number.isFinite(storeId) || storeId <= 0) {
+    return NextResponse.json(
+      { success: false, message: "Valid storeId is required" },
+      { status: 400 }
+    );
   }
 
   try {
+    console.log(`[checkout] starting store=${storeId}`);
+
     const session = await createStripeCheckoutSession({
       storeId,
       customerEmail,
+      storeSlug,
     });
 
-    console.log(`[checkout] admin checkout store=${storeId}`);
+    await recordShopEvent(storeId, SHOP_EVENT_TYPES.CHECKOUT_START, {
+      sessionId: session.sessionId,
+    });
 
     return NextResponse.json({
       success: true,
@@ -67,7 +78,7 @@ export async function POST(
       );
     }
 
-    console.error("[stripe] checkout session creation failed:", error);
+    console.error("[checkout] session creation failed:", error);
     return NextResponse.json(
       {
         success: false,

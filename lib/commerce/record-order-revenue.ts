@@ -6,6 +6,11 @@ import type { DbClient } from "@/lib/prisma/db-client";
 
 import { recordStoreRevenueTx } from "@/lib/store/record-revenue";
 
+import {
+  recordShopEvent,
+  SHOP_EVENT_TYPES,
+} from "@/lib/commerce/shop-analytics";
+
 import type { RecordOrderRevenueInput, RecordOrderRevenueResult } from "./types";
 
 
@@ -234,6 +239,10 @@ export async function recordOrderRevenue(
 
           customerId: customer.id,
 
+          productId: input.productId ?? null,
+
+          opportunityId: input.opportunityId ?? store.opportunityId ?? null,
+
           externalId: input.externalId ?? null,
 
           source: input.source,
@@ -282,7 +291,11 @@ export async function recordOrderRevenue(
 
       });
 
-
+      await recordShopEvent(input.storeId, SHOP_EVENT_TYPES.PURCHASE, {
+        orderId: order.id,
+        amount: input.total,
+        productId: order.productId,
+      });
 
       return {
 
