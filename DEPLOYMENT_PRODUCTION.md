@@ -227,53 +227,82 @@ blocks further deploys until the state is cleared. The BOM is fixed on `main` (c
 `6d26194`); the Railway database still needs a one-time resolve.
 
 **You cannot run Prisma against Railway Postgres from your PC** — `DATABASE_URL` uses
-`postgres.railway.internal`, which is only reachable inside Railway's network.
+`postgres.railway.internal`, which is only reachable inside Railway containers.
+
+**Railway CLI v5 note:** `railway run` runs commands **on your local machine** with
+Railway env vars injected. It does **not** run inside Railway and **cannot** resolve
+`postgres.railway.internal`. Use **`railway ssh`** instead.
 
 #### Where to run recovery commands
 
-| Method | Where | Notes |
-|--------|-------|-------|
-| **Railway CLI (recommended)** | Your PC terminal | `railway run` executes on Railway's network with `DATABASE_URL` injected |
-| **Railway Shell** | Dashboard → web service → Shell | Same env as running app; run npm scripts directly |
+| Method | Where it runs | Works with internal DB? |
+|--------|---------------|-------------------------|
+| **`railway ssh`** (recommended) | Inside deployed web service container | **Yes** |
+| **Redeploy** (`releaseCommand` / `startCommand`) | Railway build/release/start phases | **Yes** |
+| **`railway run`** | Your PC (local process + env vars) | **No** |
+| **`railway shell`** | Local subshell with env vars | **No** |
 
-#### Step 1 — Inspect (read-only)
+#### Step 1 — Inspect (read-only, inside Railway)
 
-From your PC (after `railway login` and `railway link`):
-
-```bash
-railway run npm run db:railway:inspect
-```
-
-This prints `_prisma_migrations` rows and which of the 9 baseline tables exist.
-
-#### Step 2 — Recover (most common: migration never applied)
-
-When inspection shows **0/9 baseline tables** (typical BOM failure):
+Link your project, then SSH into the **web service** (not Postgres):
 
 ```bash
-railway run npx prisma migrate resolve --rolled-back 20260609000000_baseline
-railway run npm run db:migrate:deploy
-railway run npx prisma migrate status
+railway login
+railway link
+railway ssh -- npm run db:railway:inspect
 ```
 
-Or run the automated recovery script:
+With an explicit service name:
 
 ```bash
-railway run npm run db:railway:recover
+railway ssh --service YOUR_WEB_SERVICE -- npm run db:railway:inspect
 ```
 
-**Automatic recovery on deploy:** `scripts/migrate-deploy.mjs` (release + startup) detects
-a failed deploy on Railway and runs `scripts/railway-migrate-recover.mjs` automatically.
-Redeploying after commit `a08d717` may clear P3009 without manual commands. Set
-`RAILWAY_SKIP_MIGRATE_RECOVER=true` to disable.
+#### Step 2 — Recover manually (0/9 baseline tables — typical BOM failure)
+
+```bash
+railway ssh -- npx prisma migrate resolve --rolled-back 20260609000000_baseline
+railway ssh -- npm run db:migrate:deploy
+railway ssh -- npx prisma migrate status
+```
+
+Or automated inspect + recover:
+
+```bash
+railway ssh -- npm run db:railway:recover
+```
+
+Interactive shell (same container):
+
+```bash
+railway ssh
+# then inside the container:
+npm run db:railway:inspect
+npx prisma migrate resolve --rolled-back 20260609000000_baseline
+npm run db:migrate:deploy
+```
+
+#### Step 2b — Redeploy only (may be enough)
+
+Commit `1ca2f0d` runs automatic P3009 recovery during `releaseCommand` and
+`startCommand` when `migrate deploy` fails **inside Railway**. Push/redeploy from
+`main` — no manual CLI required if auto-recovery succeeds.
+
+Watch deploy logs for:
+
+```
+[migrate] Deploy failed on Railway — running automatic P3009 recovery
+[recover] Applying recovery...
+[migrate] Recovery completed.
+```
 
 #### Step 3 — If all 9 tables already exist (rare)
 
 Schema applied but history stuck — mark applied instead:
 
 ```bash
-railway run npx prisma migrate resolve --applied 20260609000000_baseline
-railway run npx prisma migrate status
+railway ssh -- npx prisma migrate resolve --applied 20260609000000_baseline
+railway ssh -- npx prisma migrate status
 ```
 
 #### Step 4 — If some but not all tables exist (very rare)
@@ -296,8 +325,8 @@ DROP TABLE IF EXISTS "Agent" CASCADE;
 Then:
 
 ```bash
-railway run npx prisma migrate resolve --rolled-back 20260609000000_baseline
-railway run npm run db:migrate:deploy
+railway ssh -- npx prisma migrate resolve --rolled-back 20260609000000_baseline
+railway ssh -- npm run db:migrate:deploy
 ```
 
 **Do not run `migrate resolve` locally** — local `.env` uses SQLite (`file:./dev.db`).
@@ -309,7 +338,7 @@ Use `--applied` only if all baseline tables exist and schema matches.
 Check status:
 
 ```bash
-railway run npx prisma migrate status
+railway ssh -- npx prisma migrate status
 ```
 
 See `docs/POSTGRESQL_MIGRATION_PLAN.md`.

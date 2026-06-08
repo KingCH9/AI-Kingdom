@@ -1,15 +1,17 @@
 /**
  * Railway PostgreSQL migration recovery — run ON Railway's network only.
  *
- * Local PCs cannot reach postgres.railway.internal. Use Railway CLI:
+ * Local PCs cannot reach postgres.railway.internal.
+ *
+ * Railway CLI v5: `railway run` executes LOCALLY (env vars only) — it cannot
+ * reach internal hostnames. Use `railway ssh` to run inside your web service:
  *
  *   railway login
  *   railway link
- *   railway run npm run db:railway:recover          # inspect + auto-recover
- *   railway run npm run db:railway:recover -- --inspect   # inspect only
+ *   railway ssh -- npm run db:railway:inspect
+ *   railway ssh -- npm run db:railway:recover
  *
- * Or from Railway Dashboard → your web service → Shell (if available):
- *   npm run db:railway:recover
+ * Or interactive shell: railway ssh
  */
 import { execSync } from "node:child_process";
 import { PrismaClient } from "@prisma/client";
@@ -52,7 +54,7 @@ function assertPostgresUrl() {
 
   if (url.startsWith("file:")) {
     console.error(
-      "[recover] Refusing SQLite DATABASE_URL. Run this script via `railway run`."
+      "[recover] Refusing SQLite DATABASE_URL. Run via `railway ssh -- npm run db:railway:recover`."
     );
     process.exit(1);
   }
@@ -66,7 +68,7 @@ function assertPostgresUrl() {
     console.warn(
       "[recover] WARNING: Not running on Railway (no RAILWAY_* env / internal host).\n" +
         "  postgres.railway.internal is unreachable from your PC.\n" +
-        "  Use: railway run npm run db:railway:recover\n"
+        "  Use: railway ssh -- npm run db:railway:recover\n"
     );
   }
 
@@ -309,8 +311,8 @@ async function main() {
     console.error(
       "\n[recover] Partial schema detected — automatic recovery skipped for safety.\n" +
         "  Run the DROP TABLE SQL above on Railway, then:\n" +
-        `  railway run npx prisma migrate resolve --rolled-back ${BASELINE}\n` +
-        "  railway run npm run db:migrate:deploy"
+        `  railway ssh -- npx prisma migrate resolve --rolled-back ${BASELINE}\n` +
+        "  railway ssh -- npm run db:migrate:deploy"
     );
     process.exit(1);
   }
