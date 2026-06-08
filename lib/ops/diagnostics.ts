@@ -118,8 +118,8 @@ function checkAnthropicConfigured(): DiagnosticCheck {
     return check(
       "anthropic",
       "Anthropic API",
-      "fail",
-      "ANTHROPIC_API_KEY required in production"
+      "warn",
+      "ANTHROPIC_API_KEY not set (required for agent workflows)"
     );
   }
   return check(
@@ -225,17 +225,37 @@ function checkProductionEnv(): DiagnosticCheck[] {
 
 async function checkMigrationDrift(): Promise<DiagnosticCheck> {
   try {
-    const rows = await prisma.$queryRaw<
-      Array<{ migration_name: string; finished_at: string | null }>
-    >`SELECT migration_name, finished_at FROM _prisma_migrations ORDER BY finished_at DESC LIMIT 1`;
+    // Active failures only — rolled-back history rows must not fail health.
+    const failed = await prisma.$queryRaw<
+      Array<{ migration_name: string }>
+    >`SELECT migration_name FROM "_prisma_migrations"
+      WHERE finished_at IS NULL AND rolled_back_at IS NULL`;
 
-    const latest = rows[0];
-    if (!latest?.finished_at) {
+    if (failed.length > 0) {
+      const names = failed.map((row) => row.migration_name).join(", ");
       return check(
         "migrations",
         "Database migrations",
         "fail",
-        "No applied migrations found"
+        `Failed migration(s) pending resolution: ${names}`
+      );
+    }
+
+    // Latest successfully applied migration (ignore NULL finished_at — failed/rolled-back rows).
+    const applied = await prisma.$queryRaw<
+      Array<{ migration_name: string; finished_at: Date }>
+    >`SELECT migration_name, finished_at FROM "_prisma_migrations"
+      WHERE finished_at IS NOT NULL
+      ORDER BY finished_at DESC
+      LIMIT 1`;
+
+    const latest = applied[0];
+    if (!latest) {
+      return check(
+        "migrations",
+        "Database migrations",
+        "fail",
+        "No applied migrations found — run prisma migrate deploy"
       );
     }
 
@@ -243,7 +263,7 @@ async function checkMigrationDrift(): Promise<DiagnosticCheck> {
       "migrations",
       "Database migrations",
       "pass",
-      `Latest: ${latest.migration_name}`
+      `Latest applied: ${latest.migration_name}`
     );
   } catch (error) {
     const message =
