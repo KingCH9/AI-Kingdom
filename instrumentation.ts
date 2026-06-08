@@ -14,6 +14,9 @@ export async function register() {
   const { ensureCoreLaunchAgents } = await import("./lib/ops/agent-bootstrap");
   await ensureCoreLaunchAgents();
 
+  const { ensureHqFoundation } = await import("./lib/ops/hq-bootstrap");
+  void ensureHqFoundation();
+
   const { ensureMissingProductPages } = await import(
     "./lib/ops/product-page-bootstrap"
   );

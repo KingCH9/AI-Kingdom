@@ -11,15 +11,136 @@ datasource db {
 }
 
 model Agent {
-  id        Int      @id @default(autoincrement())
-  name      String
-  role      String
-  level     Int      @default(1)
-  xp        Int      @default(0)
-  status    String   @default("active")
-  createdAt DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  name         String
+  role         String
+  level        Int      @default(1)
+  xp           Int      @default(0)
+  status       String   @default("active")
+  departmentId Int?
+  hqPersona    String?
+  agentKind    String?
+  subRoleKey   String?
+  avatarKey    String?
+  createdAt    DateTime @default(now())
+
+  department   Department?  @relation(fields: [departmentId], references: [id])
+  missionTasks MissionTask[]
 
   @@index([role])
+  @@index([departmentId])
+  @@index([hqPersona])
+}
+
+model Department {
+  id               Int      @id @default(autoincrement())
+  key              String   @unique
+  name             String
+  description      String   @default("")
+  monthlyBudgetGbp Float    @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  agents   Agent[]
+  missions Mission[]
+  budgets  Budget[]
+}
+
+model Mission {
+  id               Int       @id @default(autoincrement())
+  title            String
+  description      String?
+  status           String    @default("researching")
+  ownerPersona     String
+  departmentId     Int
+  opportunityId    Int?      @unique
+  storeId          Int?
+  revenueStream    String    @default("shopify")
+  revenueTier      Int       @default(1)
+  targetRoi        Float?
+  estimatedCostGbp Float     @default(0)
+  actualCostGbp    Float     @default(0)
+  approvedAt       DateTime?
+  approvedBy       String?
+  humanOverride    Boolean   @default(false)
+  overrideReason   String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  department  Department    @relation(fields: [departmentId], references: [id])
+  opportunity Opportunity?  @relation(fields: [opportunityId], references: [id])
+  store       Store?        @relation(fields: [storeId], references: [id])
+  missionTasks MissionTask[]
+  events      MissionEvent[]
+
+  @@index([status])
+  @@index([departmentId])
+  @@index([ownerPersona])
+  @@index([storeId])
+}
+
+model MissionTask {
+  id               Int       @id @default(autoincrement())
+  missionId        Int
+  phase            String
+  title            String
+  status           String    @default("pending")
+  ownerPersona     String
+  assignedAgentId  Int?
+  legacyTaskId     Int?
+  sortOrder        Int       @default(0)
+  estimatedCostGbp Float     @default(0)
+  startedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  mission       Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  assignedAgent Agent?  @relation(fields: [assignedAgentId], references: [id])
+  legacyTask    Task?   @relation(fields: [legacyTaskId], references: [id])
+
+  @@index([missionId])
+  @@index([status])
+  @@index([legacyTaskId])
+}
+
+model MissionEvent {
+  id               Int      @id @default(autoincrement())
+  missionId        Int
+  agentPersona     String?
+  action           String
+  detail           String?
+  estimatedCostGbp Float    @default(0)
+  createdAt        DateTime @default(now())
+
+  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  @@index([missionId])
+}
+
+model Budget {
+  id            Int      @id @default(autoincrement())
+  departmentId  Int
+  periodMonth   String
+  allocatedGbp  Float
+  spentGbp      Float    @default(0)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  department Department @relation(fields: [departmentId], references: [id])
+
+  @@unique([departmentId, periodMonth])
+}
+
+model ConstitutionRule {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  title       String
+  description String
+  priority    Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
 }
 
 model Store {
@@ -42,6 +163,7 @@ model Store {
   agentLogs   AgentLog[]
   customers   Customer[]
   orders      Order[]
+  missions    Mission[]
 
   @@index([opportunityId])
 }
@@ -227,6 +349,7 @@ model Opportunity {
   orders               Order[]
   tasks                Task[]
   agentLogs            AgentLog[]
+  mission              Mission?
 
   @@index([status])
   @@index([opportunityScore])
@@ -242,8 +365,9 @@ model Task {
   createdAt     DateTime  @default(now())
   completedAt   DateTime?
 
-  opportunity Opportunity? @relation(fields: [opportunityId], references: [id])
-  agentLogs     AgentLog[]
+  opportunity  Opportunity?  @relation(fields: [opportunityId], references: [id])
+  agentLogs    AgentLog[]
+  missionTasks MissionTask[]
 
   @@index([status, createdAt])
   @@index([agent])

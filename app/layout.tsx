@@ -26,6 +26,10 @@ export default function RootLayout({
                 🏠 Dashboard
               </Link>
 
+              <Link href="/hq">
+                🏛️ HQ
+              </Link>
+
               <Link href="/validator">
                 🔬 Validator Queue
               </Link>
