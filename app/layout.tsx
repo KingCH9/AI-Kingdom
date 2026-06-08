@@ -54,6 +54,10 @@ export default function RootLayout({
                 📈 Nova
               </Link>
 
+              <Link href="/hq/mercury">
+                💰 Mercury
+              </Link>
+
               <Link href="/hq/finance">
                 💰 Finance
               </Link>

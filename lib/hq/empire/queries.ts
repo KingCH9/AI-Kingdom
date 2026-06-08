@@ -352,3 +352,9 @@ export async function getNovaEmpireSummary() {
   const { getNovaGrowthSummary } = await import("../nova/growth-dashboard");
   return getNovaGrowthSummary();
 }
+
+/** Mercury profitability summary for empire/HQ integration. */
+export async function getMercuryEmpireSummary() {
+  const { getMercurySummary } = await import("../mercury/profitability-dashboard");
+  return getMercurySummary();
+}

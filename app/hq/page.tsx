@@ -354,6 +354,46 @@ export default async function HqPage() {
       </section>
 
       <section className="mb-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-2xl font-bold">💰 Mercury Profitability Engine</h2>
+            <p className="text-sm text-gray-500">
+              {hq.mercurySummary.topAgent
+                ? `Top agent ${hq.mercurySummary.topAgent.name} · score ${hq.mercurySummary.topAgent.score}`
+                : "ROI, portfolio health, and capital allocation — advisory only"}
+            </p>
+          </div>
+          <Link href="/hq/mercury" className="text-sm text-blue-400 hover:underline">
+            Mercury command center →
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl">
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Portfolio Health</p>
+            <p className="text-2xl font-bold">{hq.mercurySummary.portfolioHealthScore}</p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Net Profit</p>
+            <p
+              className={`text-2xl font-bold ${hq.mercurySummary.netProfit >= 0 ? "text-green-400" : "text-red-400"}`}
+            >
+              {formatGbp(hq.mercurySummary.netProfit)}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Profitable</p>
+            <p className="text-2xl font-bold">{hq.mercurySummary.profitableMissions}</p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Fund Recs</p>
+            <p className="text-2xl font-bold text-amber-400">
+              {hq.mercurySummary.fundRecommendations}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mb-10">
         <h2 className="text-2xl font-bold mb-4">Ventures by Type</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
           {hq.ventureDistribution.map((vt) => (

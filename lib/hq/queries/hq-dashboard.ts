@@ -19,7 +19,7 @@ import {
   getRecentMissionEvents,
 } from "../missions/mission-service";
 import { getFinanceSnapshot } from "../finance/queries";
-import { getEmpireScoreSnapshot, getAtlasEmpireSummary, getAthenaEmpireSummary, getForgeEmpireSummary, getNovaEmpireSummary } from "../empire/queries";
+import { getEmpireScoreSnapshot, getAtlasEmpireSummary, getAthenaEmpireSummary, getForgeEmpireSummary, getNovaEmpireSummary, getMercuryEmpireSummary } from "../empire/queries";
 
 export type HqDepartmentSnapshot = {
   key: DepartmentKey;
@@ -191,6 +191,21 @@ export type HqSnapshot = {
     profitableMissions: number;
     trackedMissions: number;
   };
+  mercurySummary: {
+    topAgent: {
+      agentKey: string;
+      name: string;
+      score: number;
+      level: number;
+      xp: number;
+    } | null;
+    portfolioHealthScore: number;
+    totalRevenue: number;
+    netProfit: number;
+    averageRoi: number | null;
+    profitableMissions: number;
+    fundRecommendations: number;
+  };
 };
 
 function deriveAgentStatus(
@@ -284,6 +299,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     athenaIntelligenceSummary,
     forgeSummary,
     novaSummary,
+    mercurySummary,
   ] = await Promise.all([
     prisma.department.findMany({
       include: {
@@ -326,6 +342,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     getAthenaEmpireSummary(),
     getForgeEmpireSummary(),
     getNovaEmpireSummary(),
+    getMercuryEmpireSummary(),
   ]);
 
   const pending =
@@ -558,6 +575,23 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
       growingMissions: novaSummary.growingMissions,
       profitableMissions: novaSummary.profitableMissions,
       trackedMissions: novaSummary.trackedMissions,
+    },
+    mercurySummary: {
+      topAgent: mercurySummary.topAgent
+        ? {
+            agentKey: mercurySummary.topAgent.agentKey,
+            name: mercurySummary.topAgent.name,
+            score: mercurySummary.topAgent.score,
+            level: mercurySummary.topAgent.level,
+            xp: mercurySummary.topAgent.xp,
+          }
+        : null,
+      portfolioHealthScore: mercurySummary.portfolioHealthScore,
+      totalRevenue: mercurySummary.totalRevenue,
+      netProfit: mercurySummary.netProfit,
+      averageRoi: mercurySummary.averageRoi,
+      profitableMissions: mercurySummary.profitableMissions,
+      fundRecommendations: mercurySummary.fundRecommendations,
     },
   };
 }
