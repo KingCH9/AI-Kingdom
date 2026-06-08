@@ -32,6 +32,8 @@ model Store {
   opportunity Opportunity? @relation(fields: [opportunityId], references: [id])
   products    Product[]
   productPage ProductPage?
+  marketingLaunchPackage MarketingLaunchPackage?
+  marketingAssets MarketingAsset[]
   revenues    Revenue[]
   agentLogs   AgentLog[]
   customers   Customer[]
@@ -113,6 +115,40 @@ model ProductPage {
   product Product? @relation(fields: [productId], references: [id])
 
   @@index([storeId])
+}
+
+model MarketingLaunchPackage {
+  id                  Int      @id @default(autoincrement())
+  storeId             Int      @unique
+  launchStrategy      String
+  budgetTiers         String   @default("[]")
+  tiktokStrategy      String
+  metaStrategy        String
+  influencerStrategy  String
+  emailStrategy       String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@index([storeId])
+}
+
+model MarketingAsset {
+  id        Int      @id @default(autoincrement())
+  storeId   Int
+  assetType String
+  title     String
+  content   String
+  platform  String
+  createdAt DateTime @default(now())
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@unique([storeId, assetType, title])
+  @@index([storeId])
+  @@index([assetType])
+  @@index([platform])
 }
 
 model Revenue {

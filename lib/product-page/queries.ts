@@ -1,4 +1,9 @@
 import { prisma } from "@/lib/prisma";
+import {
+  pickShopMarketingHighlights,
+  pickShopSocialProof,
+} from "@/lib/marketing/queries";
+import { parseBudgetTiers } from "@/lib/marketing/ensure-launch-package";
 import { parseProductPageJsonFields } from "./ensure-product-page";
 
 export async function getShopPageBySlug(slug: string) {
@@ -8,6 +13,8 @@ export async function getShopPageBySlug(slug: string) {
       productPage: true,
       products: { orderBy: { id: "asc" }, take: 1 },
       opportunity: true,
+      marketingLaunchPackage: true,
+      marketingAssets: { orderBy: { createdAt: "asc" } },
     },
   });
 
@@ -16,11 +23,20 @@ export async function getShopPageBySlug(slug: string) {
   }
 
   const parsed = parseProductPageJsonFields(store.productPage);
+  const marketingHighlights = pickShopMarketingHighlights(store.marketingAssets);
+  const socialProofLines = pickShopSocialProof(store.marketingAssets);
+  const budgetTiers = store.marketingLaunchPackage
+    ? parseBudgetTiers(store.marketingLaunchPackage)
+    : [];
 
   return {
     store,
     product: store.products[0],
     page: store.productPage,
+    launchPackage: store.marketingLaunchPackage,
+    budgetTiers,
+    marketingHighlights,
+    socialProofLines,
     ...parsed,
   };
 }

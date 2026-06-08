@@ -17,7 +17,14 @@ export async function register() {
   const { ensureMissingProductPages } = await import(
     "./lib/ops/product-page-bootstrap"
   );
-  void ensureMissingProductPages().catch((error) => {
+  void ensureMissingProductPages()
+    .then(async () => {
+      const { ensureMissingMarketingAssets } = await import(
+        "./lib/ops/marketing-assets-bootstrap"
+      );
+      await ensureMissingMarketingAssets();
+    })
+    .catch((error) => {
     console.error(
       "[product-page-agent] bootstrap error:",
       error instanceof Error ? error.message : error

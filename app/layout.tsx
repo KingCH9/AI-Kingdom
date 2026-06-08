@@ -46,6 +46,10 @@ export default function RootLayout({
                 🏪 Stores
               </Link>
 
+              <Link href="/marketing-assets">
+                📣 Marketing Assets
+              </Link>
+
               <Link href="/products">
                 📦 Products
               </Link>

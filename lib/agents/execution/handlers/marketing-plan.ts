@@ -104,10 +104,21 @@ export async function executeMarketingPlanTask(
 
     if (store) {
       const product = await ensureProductForStore(store.id, opportunity);
-      await ensureProductPageForStore({
+      const productPage = await ensureProductPageForStore({
         store,
         product,
         opportunity,
+        marketingPlan: plan,
+      });
+
+      const { runLaunchMarketingExecution } = await import(
+        "@/lib/marketing/run-launch-marketing"
+      );
+      await runLaunchMarketingExecution({
+        store,
+        product,
+        opportunity,
+        productPage,
         marketingPlan: plan,
       });
     }

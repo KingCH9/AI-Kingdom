@@ -60,7 +60,18 @@ export default async function ShopProductPage({
     notFound();
   }
 
-  const { store, product, page, benefits, features, faq } = shop;
+  const {
+    store,
+    product,
+    page,
+    benefits,
+    features,
+    faq,
+    marketingHighlights,
+    socialProofLines,
+    launchPackage,
+    budgetTiers,
+  } = shop;
   const stripeConfigured = isStripeConfigured();
   const disabledReason = checkoutDisabledReason(store, stripeConfigured);
 
@@ -111,6 +122,45 @@ export default async function ShopProductPage({
           ))}
         </section>
 
+        {marketingHighlights.length > 0 && (
+          <section className="mt-16">
+            <h2 className="text-2xl font-bold text-stone-900 mb-6">
+              Why customers are talking about it
+            </h2>
+            <ul className="grid sm:grid-cols-2 gap-4">
+              {marketingHighlights.map((highlight) => (
+                <li
+                  key={highlight.slice(0, 48)}
+                  className="p-4 rounded-xl bg-amber-50 border border-amber-100 text-stone-800"
+                >
+                  {highlight}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {socialProofLines.length > 0 && (
+          <section className="mt-16">
+            <h2 className="text-2xl font-bold text-stone-900 mb-6">
+              Loved by early buyers
+            </h2>
+            <div className="grid sm:grid-cols-3 gap-4">
+              {socialProofLines.map((line, index) => (
+                <blockquote
+                  key={line.slice(0, 40)}
+                  className="p-5 rounded-xl bg-white border border-stone-200 shadow-sm"
+                >
+                  <p className="text-stone-700 italic">&ldquo;{line}&rdquo;</p>
+                  <footer className="mt-3 text-sm text-stone-500">
+                    — Verified buyer {index + 1}
+                  </footer>
+                </blockquote>
+              ))}
+            </div>
+          </section>
+        )}
+
         {benefits.length > 0 && (
           <section className="mt-16">
             <h2 className="text-2xl font-bold text-stone-900 mb-6">Why you&apos;ll love it</h2>
@@ -147,6 +197,12 @@ export default async function ShopProductPage({
             <h2 className="text-2xl font-bold text-stone-900 mb-6">
               Frequently asked questions
             </h2>
+            {launchPackage && (
+              <p className="text-stone-600 mb-6 max-w-2xl">
+                {launchPackage.launchStrategy.slice(0, 220)}
+                {launchPackage.launchStrategy.length > 220 ? "…" : ""}
+              </p>
+            )}
             <dl className="space-y-6">
               {faq.map((item) => (
                 <div
@@ -158,6 +214,28 @@ export default async function ShopProductPage({
                 </div>
               ))}
             </dl>
+          </section>
+        )}
+
+        {budgetTiers.length > 0 && (
+          <section className="mt-16 p-6 rounded-2xl bg-stone-100 border border-stone-200">
+            <h2 className="text-lg font-semibold text-stone-800 mb-4">
+              Launch confidence
+            </h2>
+            <p className="text-sm text-stone-600 mb-4">
+              This product is backed by a full go-to-market strategy.
+            </p>
+            <ul className="flex flex-wrap gap-3">
+              {budgetTiers.map((tier) => (
+                <li
+                  key={tier.name}
+                  className="px-4 py-2 rounded-lg bg-white border border-stone-200 text-sm"
+                >
+                  <span className="font-medium text-stone-900">{tier.name}</span>
+                  <span className="text-stone-500"> · {tier.dailyBudget}</span>
+                </li>
+              ))}
+            </ul>
           </section>
         )}
 
