@@ -226,25 +226,80 @@ PostgreSQL rejected the first SQL line. Prisma records the migration as **failed
 blocks further deploys until the state is cleared. The BOM is fixed on `main` (commit
 `6d26194`); the Railway database still needs a one-time resolve.
 
-**Do not run `migrate resolve` locally without setting the Railway PostgreSQL URL** —
-local `.env` uses SQLite (`file:./dev.db`) and would target the wrong database.
+**You cannot run Prisma against Railway Postgres from your PC** — `DATABASE_URL` uses
+`postgres.railway.internal`, which is only reachable inside Railway's network.
+
+#### Where to run recovery commands
+
+| Method | Where | Notes |
+|--------|-------|-------|
+| **Railway CLI (recommended)** | Your PC terminal | `railway run` executes on Railway's network with `DATABASE_URL` injected |
+| **Railway Shell** | Dashboard → web service → Shell | Same env as running app; run npm scripts directly |
+
+#### Step 1 — Inspect (read-only)
+
+From your PC (after `railway login` and `railway link`):
 
 ```bash
-railway login
-railway link
-# Migration failed before applying SQL — mark as rolled back, then redeploy
+railway run npm run db:railway:inspect
+```
+
+This prints `_prisma_migrations` rows and which of the 9 baseline tables exist.
+
+#### Step 2 — Recover (most common: migration never applied)
+
+When inspection shows **0/9 baseline tables** (typical BOM failure):
+
+```bash
 railway run npx prisma migrate resolve --rolled-back 20260609000000_baseline
 railway run npm run db:migrate:deploy
 railway run npx prisma migrate status
 ```
 
-Use `--rolled-back` when the migration **did not** successfully create schema (typical BOM/SQL error).
+Or run the automated recovery script:
 
-Use `--applied` only if you manually applied the migration SQL and need to mark it complete:
+```bash
+railway run npm run db:railway:recover
+```
+
+#### Step 3 — If all 9 tables already exist (rare)
+
+Schema applied but history stuck — mark applied instead:
 
 ```bash
 railway run npx prisma migrate resolve --applied 20260609000000_baseline
+railway run npx prisma migrate status
 ```
+
+#### Step 4 — If some but not all tables exist (very rare)
+
+Prisma runs each migration in a transaction, so partial apply is unlikely after a BOM
+error. If inspection shows partial tables, drop them on Railway, then:
+
+```sql
+DROP TABLE IF EXISTS "AgentLog" CASCADE;
+DROP TABLE IF EXISTS "Task" CASCADE;
+DROP TABLE IF EXISTS "Revenue" CASCADE;
+DROP TABLE IF EXISTS "Order" CASCADE;
+DROP TABLE IF EXISTS "Product" CASCADE;
+DROP TABLE IF EXISTS "Customer" CASCADE;
+DROP TABLE IF EXISTS "Store" CASCADE;
+DROP TABLE IF EXISTS "Opportunity" CASCADE;
+DROP TABLE IF EXISTS "Agent" CASCADE;
+```
+
+Then:
+
+```bash
+railway run npx prisma migrate resolve --rolled-back 20260609000000_baseline
+railway run npm run db:migrate:deploy
+```
+
+**Do not run `migrate resolve` locally** — local `.env` uses SQLite (`file:./dev.db`).
+
+Use `--rolled-back` when the migration **did not** successfully create schema (typical BOM/SQL error).
+
+Use `--applied` only if all baseline tables exist and schema matches.
 
 Check status:
 
