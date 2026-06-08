@@ -9,6 +9,7 @@ export const MISSION_EVENT_ACTIONS = {
   HUMAN_OVERRIDE: "human_override",
   SPEND_RECORDED: "spend_recorded",
   AI_COST: "ai_cost",
+  ORCHESTRATION_HANDOFF: "orchestration_handoff",
 } as const;
 
 export type MissionEventAction =

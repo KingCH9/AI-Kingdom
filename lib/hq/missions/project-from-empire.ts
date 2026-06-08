@@ -2,9 +2,7 @@ import type { Opportunity, Store, Task } from "@prisma/client";
 import { normalizeOpportunityStatus } from "@/lib/opportunity/status";
 import type { OpportunityStatus } from "@/lib/types";
 import { TASK_STATUSES, TASK_TITLE_PREFIX } from "@/lib/tasks/constants";
-import {
-  getPersonaByPipelineRole,
-} from "../agent-registry";
+import { getPersonaByPipelineRole } from "../agent-registry";
 import {
   HQ_PERSONAS,
   MISSION_PHASES,
@@ -13,6 +11,7 @@ import {
   type MissionPhase,
   type MissionStatus,
 } from "../constants";
+import { ownerPersonaForMissionStatus as routeOwnerForStatus } from "../orchestration/mission-router";
 
 export type MissionProjectionInput = {
   opportunity: Opportunity;
@@ -50,26 +49,9 @@ export function mapOpportunityToMissionStatus(
   return mapping[status] ?? MISSION_STATUSES.RESEARCHING;
 }
 
-/** Owner persona derived from mission status — no agent-to-agent messaging. */
+/** Owner persona derived from mission status — delegates to orchestration router. */
 export function ownerPersonaForMissionStatus(status: MissionStatus): HqPersona {
-  switch (status) {
-    case MISSION_STATUSES.RESEARCHING:
-    case MISSION_STATUSES.VALIDATING:
-      return HQ_PERSONAS.ATHENA;
-    case MISSION_STATUSES.APPROVED:
-      return HQ_PERSONAS.ATLAS;
-    case MISSION_STATUSES.BUILDING:
-      return HQ_PERSONAS.FORGE;
-    case MISSION_STATUSES.LAUNCHING:
-    case MISSION_STATUSES.GROWING:
-      return HQ_PERSONAS.NOVA;
-    case MISSION_STATUSES.PROFITABLE:
-      return HQ_PERSONAS.MERCURY;
-    case MISSION_STATUSES.KILLED:
-    case MISSION_STATUSES.BLOCKED:
-    default:
-      return HQ_PERSONAS.ATLAS;
-  }
+  return routeOwnerForStatus(status);
 }
 
 function taskPhaseStatus(

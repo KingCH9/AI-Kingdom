@@ -4,18 +4,17 @@ import {
   MISSION_PHASES,
   MISSION_STATUSES,
   REVENUE_STREAMS_TIER1,
-  type HqPersona,
   type MissionStatus,
 } from "../constants";
 import {
   createMissionEventWithCost,
   MISSION_EVENT_ACTIONS,
 } from "../events/mission-events";
+import { buildMissionPhaseSeeds } from "./project-from-empire";
 import {
-  buildMissionPhaseSeeds,
-  ownerPersonaForMissionStatus,
-} from "./project-from-empire";
-import { getDepartmentKeyForPersona } from "../agent-registry";
+  coordinateStatusTransition,
+  formatHandoffDetail,
+} from "../orchestration";
 
 const MISSION_INCLUDE = {
   department: true,
@@ -238,15 +237,32 @@ export async function updateMission(id: number, input: UpdateMissionInput) {
 
   const changes: string[] = [];
 
+  let handoffDetail: string | null = null;
+
   if (input.status !== undefined && input.status !== existing.status) {
     data.status = input.status;
     changes.push(`status → ${input.status}`);
-    const persona = ownerPersonaForMissionStatus(input.status);
-    data.ownerPersona = persona;
+
+    const coordination = coordinateStatusTransition({
+      previousStatus: existing.status as MissionStatus,
+      nextStatus: input.status,
+    });
+    data.ownerPersona = coordination.ownerPersona;
+
     const dept = await prisma.department.findUnique({
-      where: { key: getDepartmentKeyForPersona(persona as HqPersona) },
+      where: { key: coordination.departmentKey },
     });
     if (dept) data.departmentId = dept.id;
+
+    if (coordination.ownerPersona !== existing.ownerPersona) {
+      handoffDetail = formatHandoffDetail({
+        previousStatus: existing.status as MissionStatus,
+        nextStatus: input.status,
+        previousPersona: existing.ownerPersona,
+        nextPersona: coordination.ownerPersona,
+        handoffLabel: coordination.handoff?.label,
+      });
+    }
   }
 
   const overrideToggled =
@@ -282,6 +298,17 @@ export async function updateMission(id: number, input: UpdateMissionInput) {
       detail: changes.join("; "),
       agentPersona: input.agentPersona ?? "operator",
       estimatedCostGbp: input.estimatedCostGbp,
+    });
+  }
+
+  if (handoffDetail) {
+    await createMissionEventWithCost({
+      missionId: mission.id,
+      action: MISSION_EVENT_ACTIONS.ORCHESTRATION_HANDOFF,
+      detail: handoffDetail,
+      agentPersona: input.agentPersona ?? "orchestrator",
+      estimatedCostGbp: 0,
+      syncMissionCost: false,
     });
   }
 

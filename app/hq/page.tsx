@@ -328,12 +328,14 @@ export default async function HqPage() {
         <section className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold">Mission Board</h2>
-            <Link
-              href="/hq/missions"
-              className="text-sm text-blue-400 hover:underline"
-            >
-              View all missions →
-            </Link>
+            <div className="flex gap-4 text-sm">
+              <Link href="/hq/command" className="text-amber-400 hover:underline">
+                Command Center →
+              </Link>
+              <Link href="/hq/missions" className="text-blue-400 hover:underline">
+                View all missions →
+              </Link>
+            </div>
           </div>
           {hq.missionBoard.length === 0 ? (
             <p className="text-gray-500">
