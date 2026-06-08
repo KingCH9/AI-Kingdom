@@ -47,11 +47,10 @@ export default async function HqPage() {
     <div className="p-8 max-w-7xl">
       <div className="mb-10 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-5xl font-bold mb-2">🏛️ AI-Kingdom HQ</h1>
+          <h1 className="text-4xl font-bold mb-2">🏛️ AI-Kingdom HQ</h1>
           <p className="text-gray-400 max-w-2xl">
-            Virtual company headquarters — five departments, mission-driven
-            execution. The Empire Pipeline runs beneath; agents coordinate through
-            missions, not chat.
+            Company headquarters — departments, missions, and advisory engines in one
+            view. Drill into Empire, Mercury, or any engine from the sidebar.
           </p>
         </div>
         <div className="text-right text-sm text-gray-500">
@@ -88,508 +87,153 @@ export default async function HqPage() {
         </div>
       </div>
 
-      <section className="mb-10 rounded-2xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-950 p-6">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <div>
-            <h2 className="text-2xl font-bold">💰 Finance — Mercury</h2>
-            <p className="text-sm text-gray-500">
-              Period {hq.finance.periodMonth} · observation only
+      <div className="grid lg:grid-cols-3 gap-4 mb-8">
+        <section className="p-6 rounded-2xl border border-purple-500/30 bg-gradient-to-br from-gray-900 to-gray-950">
+          <div className="flex items-start justify-between gap-2 mb-4">
+            <div>
+              <h2 className="text-lg font-bold">👑 Empire Score</h2>
+              <p className="text-xs text-gray-500 mt-1">
+                {hq.empireSummary.activeVentures} active ·{" "}
+                {hq.empireSummary.launchReadyCount} launch ready
+              </p>
+            </div>
+            <Link href="/hq/empire" className="text-xs text-blue-400 hover:underline shrink-0">
+              Details →
+            </Link>
+          </div>
+          <p className="text-5xl font-bold text-purple-300 text-center">
+            {hq.empireSummary.score}
+          </p>
+          {hq.empireSummary.topStrength && (
+            <p className="text-xs text-gray-500 mt-3 text-center line-clamp-2">
+              {hq.empireSummary.topStrength}
             </p>
-          </div>
-          <Link
-            href="/hq/finance"
-            className="text-sm text-blue-400 hover:underline"
-          >
-            Full finance dashboard →
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          <div className="p-3 rounded-lg border border-gray-800 bg-gray-950">
-            <p className="text-xs text-gray-500">Allocated</p>
-            <p className="text-xl font-bold">{formatGbp(hq.finance.totalAllocated)}</p>
-          </div>
-          <div className="p-3 rounded-lg border border-gray-800 bg-gray-950">
-            <p className="text-xs text-gray-500">Spent</p>
-            <p className="text-xl font-bold text-amber-400">
-              {formatGbp(hq.finance.totalSpent)}
-            </p>
-          </div>
-          <div className="p-3 rounded-lg border border-gray-800 bg-gray-950">
-            <p className="text-xs text-gray-500">Remaining</p>
-            <p className="text-xl font-bold text-emerald-400">
-              {formatGbp(hq.finance.totalRemaining)}
-            </p>
-          </div>
-          <div className="p-3 rounded-lg border border-gray-800 bg-gray-950">
-            <p className="text-xs text-gray-500">Mission Costs</p>
-            <p className="text-xl font-bold">{formatGbp(hq.finance.missionCostTotal)}</p>
-          </div>
-        </div>
-
-        <BudgetUsageBar percent={hq.finance.usagePercent} className="mb-6" />
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <h3 className="text-sm font-semibold text-gray-400 mb-3">
-              Department Breakdown
-            </h3>
-            <div className="space-y-2">
-              {hq.finance.departmentBudgets.map((dept) => (
-                <div key={dept.departmentKey} className="text-sm">
-                  <div className="flex justify-between mb-1">
-                    <span>{dept.departmentName}</span>
-                    <span className="text-gray-500">
-                      {formatGbp(dept.spent)} / {formatGbp(dept.allocated)}
-                    </span>
-                  </div>
-                  <BudgetUsageBar percent={dept.usagePercent} />
-                </div>
-              ))}
+          )}
+          <div className="grid grid-cols-2 gap-2 mt-4 text-xs">
+            <div className="p-2 rounded-lg bg-gray-950 border border-gray-800">
+              <p className="text-gray-500">Top agent</p>
+              <p className="font-medium truncate capitalize">
+                {hq.empireSummary.topAgent?.agentKey.replace(/_/g, " ") ?? "—"}
+              </p>
+            </div>
+            <div className="p-2 rounded-lg bg-gray-950 border border-gray-800">
+              <p className="text-gray-500">Top dept</p>
+              <p className="font-medium truncate">
+                {hq.empireSummary.topDepartment?.departmentName ?? "—"}
+              </p>
             </div>
           </div>
-          <div>
-            <h3 className="text-sm font-semibold text-gray-400 mb-3">
-              Top Costly Missions
-            </h3>
-            {hq.finance.topCostlyMissions.length === 0 ? (
-              <p className="text-gray-600 text-sm">No costs recorded yet.</p>
-            ) : (
-              <ul className="space-y-2">
-                {hq.finance.topCostlyMissions.map((m) => (
-                  <li
-                    key={m.missionId}
-                    className="flex justify-between text-sm p-2 rounded bg-gray-950 border border-gray-800"
-                  >
-                    <Link
-                      href={`/hq/missions/${m.missionId}`}
-                      className="truncate hover:text-blue-300 pr-2"
-                    >
-                      {m.title}
-                    </Link>
-                    <span className="shrink-0 font-bold">
-                      {formatGbp(m.costGbp, 2)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
+        </section>
+
+        <section className="lg:col-span-2 p-6 rounded-2xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-950">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div>
+              <h2 className="text-lg font-bold">💰 Mercury</h2>
+              <p className="text-xs text-gray-500">
+                Period {hq.finance.periodMonth} · {formatGbp(hq.finance.totalSpent)} spent of{" "}
+                {formatGbp(hq.finance.totalAllocated)}
+              </p>
+            </div>
+            <Link href="/hq/mercury" className="text-xs text-blue-400 hover:underline">
+              Mercury →
+            </Link>
           </div>
-        </div>
-      </section>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <div className="p-3 rounded-lg border border-gray-800 bg-gray-950">
+              <p className="text-[10px] text-gray-500 uppercase">Portfolio</p>
+              <p className="text-xl font-bold">{hq.mercurySummary.portfolioHealthScore}</p>
+            </div>
+            <div className="p-3 rounded-lg border border-gray-800 bg-gray-950">
+              <p className="text-[10px] text-gray-500 uppercase">Net profit</p>
+              <p
+                className={`text-xl font-bold ${hq.mercurySummary.netProfit >= 0 ? "text-green-400" : "text-red-400"}`}
+              >
+                {formatGbp(hq.mercurySummary.netProfit)}
+              </p>
+            </div>
+            <div className="p-3 rounded-lg border border-gray-800 bg-gray-950">
+              <p className="text-[10px] text-gray-500 uppercase">Monthly rev</p>
+              <p className="text-xl font-bold text-green-400">
+                {formatGbp(hq.raeSummary.monthlyRevenueGbp)}
+              </p>
+            </div>
+            <div className="p-3 rounded-lg border border-gray-800 bg-gray-950">
+              <p className="text-[10px] text-gray-500 uppercase">Profitable</p>
+              <p className="text-xl font-bold">{hq.mercurySummary.profitableMissions}</p>
+            </div>
+          </div>
+          <BudgetUsageBar percent={hq.finance.usagePercent} />
+        </section>
+      </div>
 
       <section className="mb-10">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-2xl font-bold">👑 Empire Score</h2>
-            <p className="text-sm text-gray-500">
-              Score {hq.empireScoreSummary.score} · {hq.empireScoreSummary.activeVentures}{" "}
-              active ventures · {hq.empireScoreSummary.launchReadyCount} launch ready
-            </p>
-          </div>
-          <Link href="/hq/empire" className="text-sm text-blue-400 hover:underline">
-            Full empire dashboard →
-          </Link>
-        </div>
-        <div className="p-6 rounded-2xl border border-amber-500/20 bg-gray-900 text-center max-w-xs">
-          <p className="text-5xl font-bold text-amber-300">{hq.empireScoreSummary.score}</p>
-          <p className="text-xs text-gray-500 mt-1">Empire Score</p>
-        </div>
-      </section>
-
-      <section className="mb-10">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-2xl font-bold">👑 Empire Score V2</h2>
-            <p className="text-sm text-gray-500">
-              {hq.empireScoreV2Summary.topStrength
-                ? `Strength: ${hq.empireScoreV2Summary.topStrength}`
-                : "Multi-engine empire health — V1 unchanged"}
-            </p>
-          </div>
-          <Link href="/hq/empire/v2" className="text-sm text-blue-400 hover:underline">
-            Empire V2 dashboard →
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl">
-          <div className="p-4 rounded-xl border border-purple-500/20 bg-gray-900 text-center">
-            <p className="text-xs text-gray-500 uppercase">Empire V2</p>
-            <p className="text-4xl font-bold text-purple-300">
-              {hq.empireScoreV2Summary.empireScoreV2}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Empire V1</p>
-            <p className="text-2xl font-bold text-amber-300">
-              {hq.empireScoreV2Summary.empireScoreV1}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Top Agent</p>
-            <p className="text-lg font-bold truncate capitalize">
-              {hq.empireScoreV2Summary.topAgent?.agentKey.replace(/_/g, " ") ?? "—"}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Top Dept</p>
-            <p className="text-lg font-bold truncate">
-              {hq.empireScoreV2Summary.topDepartment?.departmentName ?? "—"}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="mb-10">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-2xl font-bold">👔 Atlas CEO Advisor</h2>
-            <p className="text-sm text-gray-500">
-              Top priority {hq.atlasSummary.topPriorityScore} ·{" "}
-              {hq.atlasSummary.fundRecommendations} fund ·{" "}
-              {hq.atlasSummary.killRecommendations} kill · advisory only
-            </p>
-          </div>
-          <Link href="/hq/atlas" className="text-sm text-blue-400 hover:underline">
-            Atlas CEO dashboard →
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-2xl">
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Top Priority</p>
-            <p className="text-2xl font-bold text-emerald-400">
+        <h2 className="text-xl font-bold mb-3">Advisory Engines</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <Link
+            href="/hq/atlas"
+            className="p-4 rounded-xl border border-gray-700 bg-gray-900 hover:border-gray-600 block"
+          >
+            <p className="text-xs text-gray-500">👔 Atlas</p>
+            <p className="text-2xl font-bold text-emerald-400 mt-1">
               {hq.atlasSummary.topPriorityScore}
             </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Fund</p>
-            <p className="text-2xl font-bold">{hq.atlasSummary.fundRecommendations}</p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Kill</p>
-            <p className="text-2xl font-bold text-red-400">
-              {hq.atlasSummary.killRecommendations}
+            <p className="text-xs text-gray-500 mt-1">
+              {hq.atlasSummary.fundRecommendations} fund ·{" "}
+              {hq.atlasSummary.killRecommendations} kill
             </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Tracked Active</p>
-            <p className="text-2xl font-bold">{hq.atlasSummary.activeMissionsTracked}</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="mb-10">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-2xl font-bold">🔬 Athena Intelligence</h2>
-            <p className="text-sm text-gray-500">
-              {hq.athenaIntelligenceSummary.topScout
-                ? `Top scout ${hq.athenaIntelligenceSummary.topScout.name} · score ${hq.athenaIntelligenceSummary.topScout.score}`
-                : "Scout metrics computed from opportunities, missions, and revenue"}
-            </p>
-          </div>
-          <Link href="/hq/scouts" className="text-sm text-blue-400 hover:underline">
-            Scout intelligence dashboard →
           </Link>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl">
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Top Scout</p>
-            <p className="text-lg font-bold truncate">
-              {hq.athenaIntelligenceSummary.topScout?.name ?? "—"}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Avg Scout Score</p>
-            <p className="text-2xl font-bold">
-              {hq.athenaIntelligenceSummary.averageScoutScore}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Total Scout Revenue</p>
-            <p className="text-2xl font-bold text-green-400">
-              {formatGbp(hq.athenaIntelligenceSummary.totalScoutRevenue)}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Highest Revenue Scout</p>
-            <p className="text-lg font-bold truncate">
-              {hq.athenaIntelligenceSummary.highestRevenueScout?.name ?? "—"}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="mb-10">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-2xl font-bold">🔨 Forge Builder Engine</h2>
-            <p className="text-sm text-gray-500">
-              {hq.forgeSummary.topAgent
-                ? `Top builder ${hq.forgeSummary.topAgent.name} · score ${hq.forgeSummary.topAgent.score}`
-                : "Build metrics computed from missions, templates, and stores"}
-            </p>
-          </div>
-          <Link href="/hq/forge" className="text-sm text-blue-400 hover:underline">
-            Forge workstation dashboard →
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl">
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Top Builder</p>
-            <p className="text-lg font-bold truncate">
-              {hq.forgeSummary.topAgent?.name ?? "—"}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Builds Completed</p>
-            <p className="text-2xl font-bold">{hq.forgeSummary.totalBuildsCompleted}</p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Stores Launched</p>
-            <p className="text-2xl font-bold">{hq.forgeSummary.totalStoresLaunched}</p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Forge Revenue</p>
-            <p className="text-2xl font-bold text-green-400">
-              {formatGbp(hq.forgeSummary.totalForgeRevenue)}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="mb-10">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-2xl font-bold">📈 Nova Growth Engine</h2>
-            <p className="text-sm text-gray-500">
-              {hq.novaSummary.topAgent
-                ? `Top agent ${hq.novaSummary.topAgent.name} · score ${hq.novaSummary.topAgent.score}`
-                : "Growth metrics from launching, growing, and profitable missions"}
-            </p>
-          </div>
-          <Link href="/hq/nova" className="text-sm text-blue-400 hover:underline">
-            Nova growth dashboard →
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl">
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Growth Score</p>
-            <p className="text-2xl font-bold">{hq.novaSummary.growthScore}</p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Nova Revenue</p>
-            <p className="text-2xl font-bold text-green-400">
-              {formatGbp(hq.novaSummary.totalRevenue)}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Launching</p>
-            <p className="text-2xl font-bold">{hq.novaSummary.launchedMissions}</p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Top Agent</p>
-            <p className="text-lg font-bold truncate">
-              {hq.novaSummary.topAgent?.name ?? "—"}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="mb-10">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-2xl font-bold">💰 Mercury Profitability Engine</h2>
-            <p className="text-sm text-gray-500">
-              {hq.mercurySummary.topAgent
-                ? `Top agent ${hq.mercurySummary.topAgent.name} · score ${hq.mercurySummary.topAgent.score}`
-                : "ROI, portfolio health, and capital allocation — advisory only"}
-            </p>
-          </div>
-          <Link href="/hq/mercury" className="text-sm text-blue-400 hover:underline">
-            Mercury command center →
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl">
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Portfolio Health</p>
-            <p className="text-2xl font-bold">{hq.mercurySummary.portfolioHealthScore}</p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Net Profit</p>
-            <p
-              className={`text-2xl font-bold ${hq.mercurySummary.netProfit >= 0 ? "text-green-400" : "text-red-400"}`}
-            >
-              {formatGbp(hq.mercurySummary.netProfit)}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Profitable</p>
-            <p className="text-2xl font-bold">{hq.mercurySummary.profitableMissions}</p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Fund Recs</p>
-            <p className="text-2xl font-bold text-amber-400">
-              {hq.mercurySummary.fundRecommendations}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="mb-10">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-2xl font-bold">📈 Revenue Acceleration Engine</h2>
-            <p className="text-sm text-gray-500">
-              Period {hq.raeSummary.periodMonth} · {hq.raeSummary.flaggedCount}{" "}
-              flagged · advisory only
-            </p>
-          </div>
-          <Link href="/hq/revenue" className="text-sm text-blue-400 hover:underline">
-            RAE dashboard →
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl">
-          <div className="p-4 rounded-xl border border-green-500/30 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Monthly Revenue</p>
-            <p className="text-2xl font-bold text-green-400">
+          <Link
+            href="/hq/revenue"
+            className="p-4 rounded-xl border border-gray-700 bg-gray-900 hover:border-gray-600 block"
+          >
+            <p className="text-xs text-gray-500">📈 Revenue</p>
+            <p className="text-2xl font-bold text-green-400 mt-1">
               {formatGbp(hq.raeSummary.monthlyRevenueGbp)}
             </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Avg ROI</p>
-            <p className="text-2xl font-bold">
-              {hq.raeSummary.averageRoi != null
-                ? `${hq.raeSummary.averageRoi}%`
-                : "—"}
+            <p className="text-xs text-gray-500 mt-1">
+              {hq.raeSummary.scaleRecommendations} scale recs
             </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Scale Recs</p>
-            <p className="text-2xl font-bold text-emerald-400">
-              {hq.raeSummary.scaleRecommendations}
+          </Link>
+          <Link
+            href="/hq/capital"
+            className="p-4 rounded-xl border border-gray-700 bg-gray-900 hover:border-gray-600 block"
+          >
+            <p className="text-xs text-gray-500">💷 Capital</p>
+            <p className="text-2xl font-bold text-emerald-400 mt-1">
+              {hq.caeSummary.portfolioCapitalScore}
             </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Top Venture</p>
-            <p className="text-lg font-bold truncate">
-              {hq.raeSummary.topVenture?.title ?? "—"}
+            <p className="text-xs text-gray-500 mt-1">
+              {hq.caeSummary.fundCount + hq.caeSummary.fundAggressivelyCount} fund recs
             </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="mb-10">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-2xl font-bold">💷 Capital Allocation Engine</h2>
-            <p className="text-sm text-gray-500">
-              Period {hq.caeSummary.periodMonth} · advisory only · no auto-spending
+          </Link>
+          <Link
+            href="/hq/ventures"
+            className="p-4 rounded-xl border border-gray-700 bg-gray-900 hover:border-gray-600 block"
+          >
+            <p className="text-xs text-gray-500">🚀 Scaling</p>
+            <p className="text-2xl font-bold text-emerald-400 mt-1">
+              {hq.vseSummary.portfolioScalingScore}
             </p>
-          </div>
-          <Link href="/hq/capital" className="text-sm text-blue-400 hover:underline">
-            CAE dashboard →
+            <p className="text-xs text-gray-500 mt-1">
+              {hq.vseSummary.scaleNowCount} scale now
+            </p>
           </Link>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl">
-          <div className="p-4 rounded-xl border border-emerald-500/30 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Portfolio Score</p>
-            <p className="text-2xl font-bold text-emerald-400">
-              {hq.caeSummary.portfolioCapitalScore}/100
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Top Recommendation</p>
-            <p className="text-lg font-bold truncate capitalize">
-              {hq.caeSummary.topRecommendation
-                ? hq.caeSummary.topRecommendation.recommendation.replace(/_/g, " ")
-                : "—"}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Fund Recs</p>
-            <p className="text-2xl font-bold text-green-400">
-              {hq.caeSummary.fundCount + hq.caeSummary.fundAggressivelyCount}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Top Venture</p>
-            <p className="text-lg font-bold truncate">
-              {hq.caeSummary.topVenture?.title ?? "—"}
-            </p>
-            {hq.caeSummary.topVenture && (
-              <p className="text-xs text-gray-500">
-                £1k sim: {formatGbp(hq.caeSummary.topVenture.recommendedAllocation)}
-              </p>
-            )}
-          </div>
-        </div>
       </section>
 
       <section className="mb-10">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-2xl font-bold">🚀 Venture Scaling Engine</h2>
-            <p className="text-sm text-gray-500">
-              Period {hq.vseSummary.periodMonth} · advisory only · no auto-scaling
-            </p>
-          </div>
-          <Link href="/hq/ventures" className="text-sm text-blue-400 hover:underline">
-            VSE dashboard →
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl">
-          <div className="p-4 rounded-xl border border-emerald-500/30 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Scaling Score</p>
-            <p className="text-2xl font-bold text-emerald-400">
-              {hq.vseSummary.portfolioScalingScore}/100
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Scale Now</p>
-            <p className="text-2xl font-bold text-green-400">
-              {hq.vseSummary.scaleNowCount}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Top Recommendation</p>
-            <p className="text-lg font-bold truncate capitalize">
-              {hq.vseSummary.topRecommendation
-                ? hq.vseSummary.topRecommendation.recommendation.replace(/_/g, " ")
-                : "—"}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Top Scaling Venture</p>
-            <p className="text-lg font-bold truncate">
-              {hq.vseSummary.topScalingVenture?.title ?? "—"}
-            </p>
-            {hq.vseSummary.topScalingVenture && (
-              <p className="text-xs text-gray-500">
-                Score {hq.vseSummary.topScalingVenture.scalingScore}/100
-              </p>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section className="mb-10">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-2xl font-bold">🏆 Top Performers</h2>
-            <p className="text-sm text-gray-500">
-              Agent & scout workstation leaders — read-only profiles
-            </p>
-          </div>
-          <div className="flex gap-4 text-sm">
+          <h2 className="text-xl font-bold">🏆 Top Performers</h2>
+          <div className="flex gap-3 text-xs">
             <Link href="/hq/agents" className="text-blue-400 hover:underline">
-              Agent workstations →
+              Agents →
             </Link>
             <Link href="/hq/scouts" className="text-blue-400 hover:underline">
-              Scout workstations →
+              Scouts →
             </Link>
           </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Link
             href={
               hq.topPerformersSummary.topAgent
@@ -598,12 +242,12 @@ export default async function HqPage() {
             }
             className="p-4 rounded-xl border border-amber-500/30 bg-gray-900 hover:border-amber-500/50 block"
           >
-            <p className="text-xs text-gray-500 uppercase">#1 Agent</p>
-            <p className="text-lg font-bold truncate">
+            <p className="text-[10px] text-gray-500 uppercase">#1 Agent</p>
+            <p className="text-sm font-bold truncate">
               {hq.topPerformersSummary.topAgent?.name ?? "—"}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Score {hq.topPerformersSummary.topAgent?.score ?? 0} · L
+              {hq.topPerformersSummary.topAgent?.score ?? 0} · L
               {hq.topPerformersSummary.topAgent?.level ?? 0}
             </p>
           </Link>
@@ -615,12 +259,12 @@ export default async function HqPage() {
             }
             className="p-4 rounded-xl border border-emerald-500/30 bg-gray-900 hover:border-emerald-500/50 block"
           >
-            <p className="text-xs text-gray-500 uppercase">#1 Scout</p>
-            <p className="text-lg font-bold truncate">
+            <p className="text-[10px] text-gray-500 uppercase">#1 Scout</p>
+            <p className="text-sm font-bold truncate">
               {hq.topPerformersSummary.topScout?.name ?? "—"}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Score {hq.topPerformersSummary.topScout?.score ?? 0} · L
+              {hq.topPerformersSummary.topScout?.score ?? 0} · L
               {hq.topPerformersSummary.topScout?.level ?? 0}
             </p>
           </Link>
@@ -632,13 +276,12 @@ export default async function HqPage() {
             }
             className="p-4 rounded-xl border border-gray-700 bg-gray-900 hover:border-gray-600 block"
           >
-            <p className="text-xs text-gray-500 uppercase">Highest XP</p>
-            <p className="text-lg font-bold truncate">
+            <p className="text-[10px] text-gray-500 uppercase">Highest XP</p>
+            <p className="text-sm font-bold truncate">
               {hq.topPerformersSummary.highestXpAgent?.name ?? "—"}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              {hq.topPerformersSummary.highestXpAgent?.xp ?? 0} XP · L
-              {hq.topPerformersSummary.highestXpAgent?.level ?? 0}
+              {hq.topPerformersSummary.highestXpAgent?.xp ?? 0} XP
             </p>
           </Link>
           <Link
@@ -649,8 +292,8 @@ export default async function HqPage() {
             }
             className="p-4 rounded-xl border border-green-500/30 bg-gray-900 hover:border-green-500/50 block"
           >
-            <p className="text-xs text-gray-500 uppercase">Highest Revenue Influence</p>
-            <p className="text-lg font-bold truncate">
+            <p className="text-[10px] text-gray-500 uppercase">Top revenue</p>
+            <p className="text-sm font-bold truncate">
               {hq.topPerformersSummary.highestRevenueAgent?.name ?? "—"}
             </p>
             <p className="text-xs text-green-400 mt-1">
@@ -660,85 +303,12 @@ export default async function HqPage() {
             </p>
           </Link>
         </div>
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <h3 className="text-lg font-semibold mb-3">Agent Leaderboard</h3>
-            <ul className="space-y-2">
-              {hq.performanceSummary.topAgents.length === 0 ? (
-                <li className="text-sm text-gray-500">No agent snapshots yet.</li>
-              ) : (
-                hq.performanceSummary.topAgents.map((agent, index) => (
-                  <li key={agent.agentKey}>
-                    <Link
-                      href={`/hq/agents/${agent.agentKey}`}
-                      className="p-3 rounded-lg border border-gray-700 bg-gray-900 flex justify-between gap-2 hover:border-gray-600 block"
-                    >
-                      <div>
-                        <p className="text-xs text-gray-500">#{index + 1}</p>
-                        <p className="font-medium capitalize">
-                          {agent.agentKey.replace(/_/g, " ")}
-                        </p>
-                        <p className="text-xs text-gray-500">{agent.department}</p>
-                      </div>
-                      <p className="text-sm text-amber-300 shrink-0">
-                        {agent.score} · L{agent.level}
-                      </p>
-                    </Link>
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-3">Scout Leaderboard</h3>
-            <ul className="space-y-2">
-              {hq.performanceSummary.topScouts.length === 0 ? (
-                <li className="text-sm text-gray-500">No scout snapshots yet.</li>
-              ) : (
-                hq.performanceSummary.topScouts.map((scout, index) => (
-                  <li key={scout.scoutKey}>
-                    <Link
-                      href={`/hq/scouts/${scout.scoutKey}`}
-                      className="p-3 rounded-lg border border-gray-700 bg-gray-900 flex justify-between gap-2 hover:border-gray-600 block"
-                    >
-                      <div>
-                        <p className="text-xs text-gray-500">#{index + 1}</p>
-                        <p className="font-medium capitalize">
-                          {scout.scoutKey.replace(/_/g, " ")}
-                        </p>
-                      </div>
-                      <p className="text-sm text-emerald-300 shrink-0">
-                        {scout.score} · L{scout.level}
-                      </p>
-                    </Link>
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
-        </div>
       </section>
 
       <section className="mb-10">
-        <h2 className="text-2xl font-bold mb-4">Ventures by Type</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-          {hq.ventureDistribution.map((vt) => (
-            <div
-              key={vt.ventureTypeKey}
-              className="p-4 rounded-xl border border-gray-700 bg-gray-900 text-center"
-            >
-              <p className="text-xs text-gray-500 truncate">{vt.ventureTypeName}</p>
-              <p className="text-2xl font-bold">{vt.count}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="mb-10">
-        <h2 className="text-2xl font-bold mb-2">Athena Opportunity Factory</h2>
+        <h2 className="text-xl font-bold mb-2">Athena Opportunity Factory</h2>
         <p className="text-sm text-gray-500 mb-4">
-          Six venture scouts — manual triggers only. Registry status reflects missions
-          and scout-generated opportunities per venture type.
+          Six venture scouts — manual triggers only.
         </p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {hq.athenaScouts.map((scout) => (
@@ -754,8 +324,7 @@ export default async function HqPage() {
               </div>
               <p className="text-xs text-gray-500 capitalize">{scout.ventureTypeKey}</p>
               <p className="text-sm mt-2">
-                {scout.missions} missions · {scout.scoutOpportunitiesGenerated}{" "}
-                scout opportunities
+                {scout.missions} missions · {scout.scoutOpportunitiesGenerated} opportunities
               </p>
             </article>
           ))}
@@ -973,40 +542,6 @@ export default async function HqPage() {
               ))
             )}
           </ul>
-        </section>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-8 mt-10">
-        <section>
-          <h2 className="text-2xl font-bold mb-4">Mission Counts by Status</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {Object.entries(hq.missionCountsByStatus).map(([status, count]) => (
-              <div
-                key={status}
-                className="p-3 rounded-lg border border-gray-800 bg-gray-900"
-              >
-                <p className="text-xs text-gray-500 capitalize">{status}</p>
-                <p className="text-xl font-bold">{count}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-2xl font-bold mb-4">Department Mission Counts</h2>
-          <div className="space-y-2">
-            {hq.departmentMissionCounts.map((row) => (
-              <div
-                key={row.departmentKey}
-                className="flex justify-between p-3 rounded-lg border border-gray-800 bg-gray-900 text-sm"
-              >
-                <span className="text-gray-400 capitalize">
-                  {row.departmentKey.replace(/_/g, " ")}
-                </span>
-                <span className="font-bold">{row.count}</span>
-              </div>
-            ))}
-          </div>
         </section>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { getEmpireScoreSnapshot } from "../empire/queries";
+import { getEmpireScoreV2Snapshot } from "../empire/score-v2-dashboard";
 import { getDepartmentWorkloads } from "../orchestration/department-coordinator";
 import { MISSION_STATUSES } from "../constants";
 import {
@@ -99,7 +99,7 @@ async function loadAtlasMissionInputs(): Promise<AtlasMissionInput[]> {
 export async function getAtlasDashboardSnapshot(): Promise<AtlasDashboardSnapshot> {
   const [empire, missionInputs, orchestrationWorkloads, scoutRankings] =
     await Promise.all([
-      getEmpireScoreSnapshot(),
+      getEmpireScoreV2Snapshot(),
       loadAtlasMissionInputs(),
       getDepartmentWorkloads(),
       getScoutRankingsForAtlas(),
@@ -118,7 +118,7 @@ export async function getAtlasDashboardSnapshot(): Promise<AtlasDashboardSnapsho
   const recommendationCounts = recommendationSummary(recommendations);
 
   await persistAtlasPerformance({
-    empireScore: empire.empireScore,
+    empireScore: empire.empireScoreV2,
     totalMissions: missionInputs.length,
     activeMissions,
     fundCount: recommendations.fund.length,
@@ -130,7 +130,7 @@ export async function getAtlasDashboardSnapshot(): Promise<AtlasDashboardSnapsho
 
   return {
     generatedAt: new Date().toISOString(),
-    empireScore: empire.empireScore,
+    empireScore: empire.empireScoreV2,
     priorityMissions,
     recommendations,
     recommendationCounts,

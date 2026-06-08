@@ -1,25 +1,27 @@
 import { NextResponse } from "next/server";
-import { getEmpireScoreSnapshot } from "@/lib/hq/empire/queries";
+import { getEmpireScoreV2Snapshot } from "@/lib/hq/empire/score-v2-dashboard";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const snapshot = await getEmpireScoreSnapshot();
+    const snapshot = await getEmpireScoreV2Snapshot();
     return NextResponse.json({
       success: true,
-      empireScore: snapshot.empireScore,
-      metrics: snapshot.metrics,
+      empireScore: snapshot.empireScoreV2,
+      componentScores: snapshot.componentScores,
+      componentWeights: snapshot.componentWeights,
       departmentScores: snapshot.departmentScores,
-      revenueByVentureType: snapshot.revenueByVentureType,
-      venturesByType: snapshot.venturesByType,
-      missionStatistics: snapshot.missionStatistics,
-      scouts: snapshot.scouts,
-      periodMonth: snapshot.periodMonth,
+      topAgents: snapshot.rankings.topAgents,
+      topScouts: snapshot.rankings.topScouts,
+      portfolioHealth: snapshot.portfolioHealth,
+      ventureDiversification: snapshot.ventureDiversification,
+      strengths: snapshot.strengths,
+      weaknesses: snapshot.weaknesses,
       generatedAt: snapshot.generatedAt,
     });
   } catch (error) {
-    console.error("[hq/empire] snapshot failed:", error);
+    console.error("[hq/empire] failed:", error);
     return NextResponse.json(
       {
         success: false,

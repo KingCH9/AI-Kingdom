@@ -5,6 +5,9 @@ const globalForPrisma = global as unknown as {
 };
 
 function withConnectionLimit(url: string, limit: number): string {
+  if (url.startsWith("file:")) {
+    return url;
+  }
   try {
     const parsed = new URL(url);
     if (!parsed.searchParams.has("connection_limit")) {

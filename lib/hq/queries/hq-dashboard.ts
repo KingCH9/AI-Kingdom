@@ -139,14 +139,10 @@ export type HqSnapshot = {
     opportunitiesDiscovered: number;
     scoutOpportunitiesGenerated: number;
   }>;
-  empireScoreSummary: {
+  empireSummary: {
     score: number;
     activeVentures: number;
     launchReadyCount: number;
-  };
-  empireScoreV2Summary: {
-    empireScoreV2: number;
-    empireScoreV1: number;
     topStrength: string | null;
     topWeakness: string | null;
     topAgent: {
@@ -668,14 +664,10 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
       opportunitiesDiscovered: s.opportunitiesDiscovered,
       scoutOpportunitiesGenerated: s.opportunitiesDiscovered,
     })),
-    empireScoreSummary: {
-      score: empireSnapshot.empireScore,
+    empireSummary: {
+      score: empireScoreV2Summary.empireScoreV2,
       activeVentures: empireSnapshot.metrics.activeVentures,
       launchReadyCount: empireSnapshot.metrics.launchReadyCount,
-    },
-    empireScoreV2Summary: {
-      empireScoreV2: empireScoreV2Summary.empireScoreV2,
-      empireScoreV1: empireScoreV2Summary.empireScoreV1,
       topStrength: empireScoreV2Summary.topStrength,
       topWeakness: empireScoreV2Summary.topWeakness,
       topAgent: empireScoreV2Summary.topAgent
