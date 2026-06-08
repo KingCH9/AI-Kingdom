@@ -1,6 +1,6 @@
 import "./globals.css";
 import Link from "next/link";
-import { EmpireMutationUnlock } from "@/components/empire-mutation-unlock";
+import { EmpireMutationAccess } from "@/components/empire-mutation-access";
 
 export default function RootLayout({
   children,
@@ -71,7 +71,7 @@ export default function RootLayout({
                 🤖 Empire
               </Link>
 
-              <EmpireMutationUnlock />
+              <EmpireMutationAccess />
 
             </nav>
           </aside>

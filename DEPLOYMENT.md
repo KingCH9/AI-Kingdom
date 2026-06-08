@@ -33,8 +33,9 @@ When `NODE_ENV=production`, the application **will not start** without `EMPIRE_A
 
 Server Actions require mutation credentials in production (or in dev when auth env vars are set).
 
-1. Use **Mutation access** in the sidebar — enter `EMPIRE_API_KEY` or `EMPIRE_ADMIN_PASSWORD` once per browser session (httpOnly cookie).
-2. Or call mutation APIs directly with `x-api-key` (external automation).
+1. **Dashboard Server Actions** (Generate Opportunity, status updates, etc.) — automatic in production when `EMPIRE_DASHBOARD_AUTO_UNLOCK` is enabled (default). Set `EMPIRE_DASHBOARD_AUTO_UNLOCK=false` to require sidebar unlock.
+2. **Mutation access** in the sidebar — enter `EMPIRE_API_KEY` or `EMPIRE_ADMIN_PASSWORD` once per browser session when auto-unlock is disabled.
+3. Or call mutation APIs directly with `x-api-key` (external automation).
 
 Unauthorized Server Action calls return a clear error message.
 

@@ -2,6 +2,7 @@ import { cookies, headers } from "next/headers";
 import {
   getEmpireAdminPassword,
   getEmpireApiKey,
+  isDashboardAutoUnlockEnabled,
   requiresMutationAuth,
 } from "@/lib/env";
 
@@ -56,9 +57,15 @@ async function hasValidMutationCredentials(): Promise<boolean> {
 /**
  * Guards server-side mutations invoked through Server Actions.
  * Open in development when no auth env is configured.
+ * In production with dashboard auto-unlock, Server Actions are trusted;
+ * REST mutation APIs still require x-api-key via requireApiKey().
  */
 export async function assertAuthorizedMutation(): Promise<void> {
   if (!requiresMutationAuth()) {
+    return;
+  }
+
+  if (isDashboardAutoUnlockEnabled() && getEmpireApiKey()) {
     return;
   }
 

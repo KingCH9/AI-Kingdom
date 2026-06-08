@@ -35,7 +35,23 @@ export function isProduction(): boolean {
 
 /** API key for mutation routes and server action authorization. */
 export function getEmpireApiKey(): string | undefined {
-  return readEnvSecret("EMPIRE_API_KEY");
+  return readEnvSecret("EMPIRE_API_KEY") ?? readEnvSecret("EMPIRE_APIKEY");
+}
+
+/**
+ * When true, dashboard Server Actions work without manual sidebar unlock.
+ * External mutation API routes still require x-api-key.
+ * Set EMPIRE_DASHBOARD_AUTO_UNLOCK=false to require sidebar unlock in production.
+ */
+export function isDashboardAutoUnlockEnabled(): boolean {
+  const raw = process.env.EMPIRE_DASHBOARD_AUTO_UNLOCK?.trim().toLowerCase();
+  if (raw === "false" || raw === "0" || raw === "no") {
+    return false;
+  }
+  if (raw === "true" || raw === "1" || raw === "yes") {
+    return true;
+  }
+  return isProduction();
 }
 
 /** Optional dashboard password for server action sessions (alternative to API key in browser). */
