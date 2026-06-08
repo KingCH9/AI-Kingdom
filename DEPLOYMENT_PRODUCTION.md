@@ -262,6 +262,11 @@ Or run the automated recovery script:
 railway run npm run db:railway:recover
 ```
 
+**Automatic recovery on deploy:** `scripts/migrate-deploy.mjs` (release + startup) detects
+a failed deploy on Railway and runs `scripts/railway-migrate-recover.mjs` automatically.
+Redeploying after commit `a08d717` may clear P3009 without manual commands. Set
+`RAILWAY_SKIP_MIGRATE_RECOVER=true` to disable.
+
 #### Step 3 — If all 9 tables already exist (rare)
 
 Schema applied but history stuck — mark applied instead:

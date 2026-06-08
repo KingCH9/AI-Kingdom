@@ -57,6 +57,45 @@ const migrationsDir =
 
 assertMigrationSqlHasNoBom(migrationsDir);
 
+function isRailwayNetwork() {
+  return (
+    Boolean(process.env.RAILWAY_ENVIRONMENT) ||
+    Boolean(process.env.RAILWAY_PROJECT_ID) ||
+    Boolean(process.env.RAILWAY_SERVICE_ID) ||
+    url.includes("railway.internal")
+  );
+}
+
+function runMigrateDeploy() {
+  execSync("npx prisma migrate deploy", { stdio: "inherit", env: process.env });
+}
+
 console.log("[migrate] Running prisma migrate deploy...");
-execSync("npx prisma migrate deploy", { stdio: "inherit", env: process.env });
-console.log("[migrate] Migrations applied successfully.");
+try {
+  runMigrateDeploy();
+  console.log("[migrate] Migrations applied successfully.");
+} catch {
+  if (
+    isRailwayNetwork() &&
+    (scheme === "postgresql" || scheme === "postgres") &&
+    process.env.RAILWAY_SKIP_MIGRATE_RECOVER !== "true"
+  ) {
+    console.log(
+      "[migrate] Deploy failed on Railway — running automatic P3009 recovery " +
+        "(scripts/railway-migrate-recover.mjs)..."
+    );
+    try {
+      execSync("node scripts/railway-migrate-recover.mjs", {
+        stdio: "inherit",
+        env: process.env,
+      });
+      console.log("[migrate] Recovery completed.");
+    } catch {
+      console.error("[migrate] Automatic recovery failed.");
+      process.exit(1);
+    }
+  } else {
+    console.error("[migrate] prisma migrate deploy failed.");
+    process.exit(1);
+  }
+}
