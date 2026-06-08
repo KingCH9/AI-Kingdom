@@ -364,3 +364,9 @@ export async function getRaeEmpireSummary() {
   const { getRaeSummary } = await import("../revenue/rae-dashboard");
   return getRaeSummary();
 }
+
+/** CAE capital allocation summary for empire/HQ integration. */
+export async function getCaeEmpireSummary() {
+  const { getCaeSummary } = await import("../capital/capital-dashboard");
+  return getCaeSummary();
+}

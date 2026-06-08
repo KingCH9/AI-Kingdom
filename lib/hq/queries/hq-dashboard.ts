@@ -23,7 +23,7 @@ import { getPerformanceSummary } from "../performance/performance-queries";
 import { getEmpireScoreV2Summary } from "../empire/score-v2-dashboard";
 import { getAgentProfileDefinition } from "../workstations/agent-profiles";
 import { getScoutProfileDefinition } from "../workstations/scout-profiles";
-import { getEmpireScoreSnapshot, getAtlasEmpireSummary, getAthenaEmpireSummary, getForgeEmpireSummary, getNovaEmpireSummary, getMercuryEmpireSummary, getRaeEmpireSummary } from "../empire/queries";
+import { getEmpireScoreSnapshot, getAtlasEmpireSummary, getAthenaEmpireSummary, getForgeEmpireSummary, getNovaEmpireSummary, getMercuryEmpireSummary, getRaeEmpireSummary, getCaeEmpireSummary } from "../empire/queries";
 
 export type HqDepartmentSnapshot = {
   key: DepartmentKey;
@@ -246,6 +246,23 @@ export type HqSnapshot = {
       revenueContributed: number;
     } | null;
   };
+  caeSummary: {
+    periodMonth: string;
+    portfolioCapitalScore: number;
+    fundAggressivelyCount: number;
+    fundCount: number;
+    topRecommendation: {
+      missionId: number;
+      title: string;
+      allocationScore: number;
+      recommendation: string;
+    } | null;
+    topVenture: {
+      missionId: number;
+      title: string;
+      recommendedAllocation: number;
+    } | null;
+  };
   performanceSummary: {
     topAgent: {
       agentKey: string;
@@ -409,6 +426,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     novaSummary,
     mercurySummary,
     raeSummary,
+    caeSummary,
     performanceSummary,
     empireScoreV2Summary,
   ] = await Promise.all([
@@ -455,6 +473,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     getNovaEmpireSummary(),
     getMercuryEmpireSummary(),
     getRaeEmpireSummary(),
+    getCaeEmpireSummary(),
     getPerformanceSummary(),
     getEmpireScoreV2Summary(),
   ]);
@@ -737,6 +756,14 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
       scaleRecommendations: raeSummary.scaleRecommendations,
       topVenture: raeSummary.topVenture,
       topAgentContributor: raeSummary.topAgentContributor,
+    },
+    caeSummary: {
+      periodMonth: caeSummary.periodMonth,
+      portfolioCapitalScore: caeSummary.portfolioCapitalScore,
+      fundAggressivelyCount: caeSummary.fundAggressivelyCount,
+      fundCount: caeSummary.fundCount,
+      topRecommendation: caeSummary.topRecommendation,
+      topVenture: caeSummary.topVenture,
     },
     performanceSummary: {
       topAgent: performanceSummary.topAgent,

@@ -78,6 +78,10 @@ export default function RootLayout({
                 📈 RAE
               </Link>
 
+              <Link href="/hq/capital">
+                💷 Capital
+              </Link>
+
               <Link href="/validator">
                 🔬 Validator Queue
               </Link>

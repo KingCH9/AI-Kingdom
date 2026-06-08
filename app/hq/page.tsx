@@ -481,6 +481,53 @@ export default async function HqPage() {
       <section className="mb-10">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
           <div>
+            <h2 className="text-2xl font-bold">💷 Capital Allocation Engine</h2>
+            <p className="text-sm text-gray-500">
+              Period {hq.caeSummary.periodMonth} · advisory only · no auto-spending
+            </p>
+          </div>
+          <Link href="/hq/capital" className="text-sm text-blue-400 hover:underline">
+            CAE dashboard →
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl">
+          <div className="p-4 rounded-xl border border-emerald-500/30 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Portfolio Score</p>
+            <p className="text-2xl font-bold text-emerald-400">
+              {hq.caeSummary.portfolioCapitalScore}/100
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Top Recommendation</p>
+            <p className="text-lg font-bold truncate capitalize">
+              {hq.caeSummary.topRecommendation
+                ? hq.caeSummary.topRecommendation.recommendation.replace(/_/g, " ")
+                : "—"}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Fund Recs</p>
+            <p className="text-2xl font-bold text-green-400">
+              {hq.caeSummary.fundCount + hq.caeSummary.fundAggressivelyCount}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Top Venture</p>
+            <p className="text-lg font-bold truncate">
+              {hq.caeSummary.topVenture?.title ?? "—"}
+            </p>
+            {hq.caeSummary.topVenture && (
+              <p className="text-xs text-gray-500">
+                £1k sim: {formatGbp(hq.caeSummary.topVenture.recommendedAllocation)}
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="mb-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
             <h2 className="text-2xl font-bold">🏆 Top Performers</h2>
             <p className="text-sm text-gray-500">
               Agent & scout workstation leaders — read-only profiles
