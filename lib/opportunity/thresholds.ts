@@ -7,7 +7,7 @@ export const OPPORTUNITY_THRESHOLDS = {
   VALIDATED_MIN_SCORE: 70,
 
   /** Minimum score required (with other gates) for launch_ready. */
-  LAUNCH_READY_MIN_SCORE: 80,
+  LAUNCH_READY_MIN_SCORE: 79,
 
   /** Maximum risk rating allowed for launch_ready. */
   LAUNCH_READY_MAX_RISK: 4,
