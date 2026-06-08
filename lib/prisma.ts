@@ -21,7 +21,7 @@ function withConnectionLimit(url: string, limit: number): string {
 
 function createPrismaClient(): PrismaClient {
   const rawUrl = process.env.DATABASE_URL?.trim();
-  const limit = Number(process.env.PRISMA_CONNECTION_LIMIT ?? "5");
+  const limit = Number(process.env.PRISMA_CONNECTION_LIMIT ?? "3");
   const url =
     rawUrl && Number.isFinite(limit) && limit > 0
       ? withConnectionLimit(rawUrl, limit)
