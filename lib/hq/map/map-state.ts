@@ -35,6 +35,8 @@ export type HqMapAgent = {
 export type HqMapRoomState = HqRoomDefinition & {
   agentCount: number;
   currentMission: string | null;
+  isActive?: boolean;
+  occupancy?: number;
 };
 
 export type HqMapState = {

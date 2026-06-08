@@ -2,18 +2,18 @@ import type Phaser from "phaser";
 import {
   HQ_MAP_HEIGHT,
   HQ_MAP_WIDTH,
-  type HqMapAgent,
-  type HqMapState,
+  type HqAgentLiveState,
+  type HqMapLiveState,
 } from "@/lib/hq/map";
-import { drawAgent } from "./hq-agent";
+import { createAnimatedAgent, type AnimatedAgentHandle } from "./agent-animation";
 import { drawRoom } from "./hq-room";
 
 type CreateHqMapGameOptions = {
   parent: HTMLElement;
   Phaser: typeof import("phaser");
-  state: HqMapState;
-  onAgentHover: (agent: HqMapAgent | null, pointer?: Phaser.Input.Pointer) => void;
-  onAgentClick: (agent: HqMapAgent) => void;
+  state: HqMapLiveState;
+  onAgentHover: (agent: HqAgentLiveState | null, pointer?: Phaser.Input.Pointer) => void;
+  onAgentClick: (agent: HqAgentLiveState) => void;
 };
 
 export function createHqMapGame({
@@ -24,6 +24,8 @@ export function createHqMapGame({
   onAgentClick,
 }: CreateHqMapGameOptions): Phaser.Game {
   class HqMapScene extends Phaser.Scene {
+    private agentHandles: AnimatedAgentHandle[] = [];
+
     constructor() {
       super({ key: "HqMapScene" });
     }
@@ -34,7 +36,7 @@ export function createHqMapGame({
       bg.fillRect(0, 0, HQ_MAP_WIDTH, HQ_MAP_HEIGHT);
 
       this.add
-        .text(HQ_MAP_WIDTH / 2, 8, "AI Kingdom HQ — Live Operations View", {
+        .text(HQ_MAP_WIDTH / 2, 8, "AI Kingdom HQ — Live Activity View", {
           fontFamily: "system-ui, sans-serif",
           fontSize: "14px",
           color: "#64748b",
@@ -47,14 +49,21 @@ export function createHqMapGame({
         });
       }
 
-      for (const agent of state.agents) {
-        drawAgent(this, agent, {
+      this.agentHandles = state.agentStates.map((agent) =>
+        createAnimatedAgent(this, agent, {
           onAgentHover,
           onAgentClick,
-        });
-      }
+        })
+      );
 
       this.cameras.main.setBounds(0, 0, HQ_MAP_WIDTH, HQ_MAP_HEIGHT);
+    }
+
+    shutdown() {
+      for (const handle of this.agentHandles) {
+        handle.destroy();
+      }
+      this.agentHandles = [];
     }
   }
 

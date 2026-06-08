@@ -23,3 +23,42 @@ export {
   type HqMapRoomState,
   type HqMapAgentKind,
 } from "./map-state";
+
+export {
+  ACTIVITY_REGISTRY,
+  getActivityDefinition,
+  formatActivityLabel,
+  type AgentActivityType,
+  type ActivityDefinition,
+} from "./activity-registry";
+
+export {
+  PIPELINE_ROOM_ORDER,
+  missionStatusToRoom,
+  missionStatusToActivity,
+  departmentToHomeRoom,
+  getRoomAnchor,
+  buildPipelineRoute,
+  roomCenter,
+} from "./agent-routes";
+
+export {
+  getHqMapLiveState,
+} from "./activity-engine";
+
+export {
+  interpolateAgentPosition,
+  walkingBobOffset,
+  currentAgentPosition,
+} from "./agent-state-utils";
+
+export type {
+  HqAgentLiveState,
+  HqActivityFeedEntry,
+  HqDepartmentStatus,
+  HqMapLiveState,
+  HqMapAgentWithLive,
+  HqMapRoomStateLive,
+} from "./agent-state";
+
+export { liveStateToMapAgent } from "./agent-state";

@@ -2,18 +2,20 @@
 
 import { useEffect, useRef, useState } from "react";
 import type Phaser from "phaser";
-import type { HqMapAgent, HqMapState } from "@/lib/hq/map";
+import type { HqAgentLiveState, HqMapLiveState } from "@/lib/hq/map";
+import { ActivityPanel } from "./activity-panel";
 import { createHqMapGame } from "./create-hq-map-game";
+import { LiveFeed } from "./live-feed";
 import { HqTooltip } from "./hq-tooltip";
 
 type HqMapProps = {
-  state: HqMapState;
+  state: HqMapLiveState;
 };
 
 export function HqMap({ state }: HqMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
-  const [hoveredAgent, setHoveredAgent] = useState<HqMapAgent | null>(null);
+  const [hoveredAgent, setHoveredAgent] = useState<HqAgentLiveState | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -56,17 +58,24 @@ export function HqMap({ state }: HqMapProps) {
   }, [state]);
 
   return (
-    <div className="relative w-full max-w-5xl">
-      <div
-        ref={containerRef}
-        className="w-full overflow-hidden rounded-2xl border border-gray-700 bg-gray-950 shadow-inner"
-        style={{ aspectRatio: "1024 / 720" }}
-      />
-      <HqTooltip agent={hoveredAgent} x={tooltipPos.x} y={tooltipPos.y} />
-      <p className="text-xs text-gray-500 mt-3">
-        Visualization only — click an agent or scout to open their profile. Click a room
-        to open its department dashboard.
-      </p>
+    <div className="grid xl:grid-cols-[minmax(0,1fr)_280px] gap-4">
+      <div className="relative w-full min-w-0">
+        <div
+          ref={containerRef}
+          className="w-full overflow-hidden rounded-2xl border border-gray-700 bg-gray-950 shadow-inner"
+          style={{ aspectRatio: "1024 / 720" }}
+        />
+        <HqTooltip agent={hoveredAgent} x={tooltipPos.x} y={tooltipPos.y} />
+        <p className="text-xs text-gray-500 mt-3">
+          Live visualization — agents move between departments based on mission status.
+          Read-only; no mutations.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        <LiveFeed entries={state.activityFeed} />
+        <ActivityPanel state={state} />
+      </div>
     </div>
   );
 }

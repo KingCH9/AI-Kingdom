@@ -9,10 +9,15 @@ export function drawRoom(
   const container = scene.add.container(0, 0);
 
   const bg = scene.add.graphics();
-  bg.fillStyle(0x111827, 0.92);
+  bg.fillStyle(0x111827, room.isActive ? 0.98 : 0.92);
   bg.fillRoundedRect(room.x, room.y, room.width, room.height, 12);
-  bg.lineStyle(2, room.accentColor, 0.85);
+  bg.lineStyle(room.isActive ? 3 : 2, room.accentColor, room.isActive ? 1 : 0.85);
   bg.strokeRoundedRect(room.x, room.y, room.width, room.height, 12);
+
+  if (room.isActive) {
+    bg.lineStyle(1, room.accentColor, 0.25);
+    bg.strokeRoundedRect(room.x - 3, room.y - 3, room.width + 6, room.height + 6, 14);
+  }
 
   const title = scene.add.text(room.x + 12, room.y + 10, `${room.emoji} ${room.name}`, {
     fontFamily: "system-ui, sans-serif",
