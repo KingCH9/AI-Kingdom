@@ -151,6 +151,13 @@ export async function assertProductionDatabaseConnection(): Promise<void> {
         continue;
       }
 
+      if (transient) {
+        console.warn(
+          "[startup] Database connection limit persists after retries — continuing boot (health will report degraded until connections free)"
+        );
+        return;
+      }
+
       throw new Error(`Production database connection failed: ${message}`);
     }
   }
