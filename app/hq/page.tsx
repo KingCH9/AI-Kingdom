@@ -173,7 +173,15 @@ export default async function HqPage() {
 
       <div className="grid lg:grid-cols-3 gap-8">
         <section className="lg:col-span-2">
-          <h2 className="text-2xl font-bold mb-4">Mission Board</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold">Mission Board</h2>
+            <Link
+              href="/hq/missions"
+              className="text-sm text-blue-400 hover:underline"
+            >
+              View all missions →
+            </Link>
+          </div>
           {hq.missionBoard.length === 0 ? (
             <p className="text-gray-500">
               No missions yet. Bootstrap runs on startup from existing opportunities.
@@ -193,7 +201,14 @@ export default async function HqPage() {
                 <tbody>
                   {hq.missionBoard.map((mission) => (
                     <tr key={mission.id} className="border-t border-gray-800">
-                      <td className="p-3 font-medium">{mission.title}</td>
+                      <td className="p-3 font-medium">
+                        <Link
+                          href={`/hq/missions/${mission.id}`}
+                          className="hover:text-blue-300"
+                        >
+                          {mission.title}
+                        </Link>
+                      </td>
                       <td className={`p-3 capitalize ${missionStatusClass(mission.status)}`}>
                         {mission.status}
                       </td>
@@ -227,6 +242,94 @@ export default async function HqPage() {
               </li>
             ))}
           </ul>
+        </section>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-8 mt-10">
+        <section>
+          <h2 className="text-2xl font-bold mb-4">Recent Missions</h2>
+          <ul className="space-y-2">
+            {hq.recentMissions.map((m) => (
+              <li
+                key={m.id}
+                className="flex items-center justify-between gap-2 p-3 rounded-lg border border-gray-800 bg-gray-900 text-sm"
+              >
+                <Link
+                  href={`/hq/missions/${m.id}`}
+                  className="font-medium hover:text-blue-300 truncate"
+                >
+                  {m.title}
+                </Link>
+                <span className={`text-xs capitalize shrink-0 ${missionStatusClass(m.status)}`}>
+                  {m.status}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold mb-4">Recent Mission Events</h2>
+          <ul className="space-y-2">
+            {hq.recentEvents.length === 0 ? (
+              <li className="text-gray-500 text-sm">No events yet.</li>
+            ) : (
+              hq.recentEvents.map((e) => (
+                <li
+                  key={e.id}
+                  className="p-3 rounded-lg border border-gray-800 bg-gray-900 text-sm"
+                >
+                  <div className="flex justify-between gap-2 text-xs text-gray-500 mb-1">
+                    <span>{new Date(e.createdAt).toLocaleString("en-GB")}</span>
+                    <span className="capitalize">{e.action.replace(/_/g, " ")}</span>
+                  </div>
+                  <Link
+                    href={`/hq/missions/${e.missionId}`}
+                    className="text-blue-400 hover:underline text-xs"
+                  >
+                    {e.missionTitle}
+                  </Link>
+                  {e.detail && (
+                    <p className="text-gray-400 text-xs mt-1 line-clamp-2">{e.detail}</p>
+                  )}
+                </li>
+              ))
+            )}
+          </ul>
+        </section>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-8 mt-10">
+        <section>
+          <h2 className="text-2xl font-bold mb-4">Mission Counts by Status</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {Object.entries(hq.missionCountsByStatus).map(([status, count]) => (
+              <div
+                key={status}
+                className="p-3 rounded-lg border border-gray-800 bg-gray-900"
+              >
+                <p className="text-xs text-gray-500 capitalize">{status}</p>
+                <p className="text-xl font-bold">{count}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold mb-4">Department Mission Counts</h2>
+          <div className="space-y-2">
+            {hq.departmentMissionCounts.map((row) => (
+              <div
+                key={row.departmentKey}
+                className="flex justify-between p-3 rounded-lg border border-gray-800 bg-gray-900 text-sm"
+              >
+                <span className="text-gray-400 capitalize">
+                  {row.departmentKey.replace(/_/g, " ")}
+                </span>
+                <span className="font-bold">{row.count}</span>
+              </div>
+            ))}
+          </div>
         </section>
       </div>
     </div>

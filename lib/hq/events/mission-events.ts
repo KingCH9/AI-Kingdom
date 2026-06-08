@@ -1,0 +1,56 @@
+import { prisma } from "@/lib/prisma";
+
+export const MISSION_EVENT_ACTIONS = {
+  MISSION_CREATED: "mission_created",
+  MISSION_UPDATED: "mission_updated",
+  TASK_COMPLETED: "task_completed",
+  RULE_VIOLATION: "rule_violation",
+  HUMAN_OVERRIDE: "human_override",
+} as const;
+
+export type MissionEventAction =
+  (typeof MISSION_EVENT_ACTIONS)[keyof typeof MISSION_EVENT_ACTIONS];
+
+export type CreateMissionEventInput = {
+  missionId: number;
+  action: MissionEventAction | string;
+  detail?: string | null;
+  agentPersona?: string | null;
+  estimatedCostGbp?: number;
+};
+
+/** Adapter layer — logs HQ activity without touching AgentLog. */
+export async function createMissionEvent(input: CreateMissionEventInput) {
+  return prisma.missionEvent.create({
+    data: {
+      missionId: input.missionId,
+      action: input.action,
+      detail: input.detail ?? null,
+      agentPersona: input.agentPersona ?? null,
+      estimatedCostGbp: input.estimatedCostGbp ?? 0,
+    },
+  });
+}
+
+export async function getLatestMissionEvents(
+  missionIds: number[],
+  takePerMission = 3
+) {
+  if (missionIds.length === 0) return new Map<number, Awaited<ReturnType<typeof prisma.missionEvent.findMany>>>();
+
+  const events = await prisma.missionEvent.findMany({
+    where: { missionId: { in: missionIds } },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const grouped = new Map<number, typeof events>();
+  for (const event of events) {
+    const list = grouped.get(event.missionId) ?? [];
+    if (list.length < takePerMission) {
+      list.push(event);
+      grouped.set(event.missionId, list);
+    }
+  }
+
+  return grouped;
+}

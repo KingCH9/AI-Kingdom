@@ -30,6 +30,10 @@ export default function RootLayout({
                 🏛️ HQ
               </Link>
 
+              <Link href="/hq/missions">
+                🎯 Missions
+              </Link>
+
               <Link href="/validator">
                 🔬 Validator Queue
               </Link>

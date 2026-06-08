@@ -13,6 +13,11 @@ import {
   type DepartmentKey,
   type HqAgentStatus,
 } from "../constants";
+import {
+  getDepartmentMissionCounts,
+  getMissionStatusCounts,
+  getRecentMissionEvents,
+} from "../missions/mission-service";
 
 export type HqDepartmentSnapshot = {
   key: DepartmentKey;
@@ -70,6 +75,28 @@ export type HqSnapshot = {
     totalRevenue: number;
     netProfit: number;
   };
+  recentMissions: Array<{
+    id: number;
+    title: string;
+    status: string;
+    ownerPersona: string;
+    departmentKey: string;
+    updatedAt: string;
+  }>;
+  recentEvents: Array<{
+    id: number;
+    missionId: number;
+    missionTitle: string;
+    action: string;
+    detail: string | null;
+    agentPersona: string | null;
+    createdAt: string;
+  }>;
+  missionCountsByStatus: Record<string, number>;
+  departmentMissionCounts: Array<{
+    departmentKey: string;
+    count: number;
+  }>;
 };
 
 function deriveAgentStatus(
@@ -153,6 +180,10 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     opportunities,
     taskCounts,
     revenueAgg,
+    missionStatusCounts,
+    departmentMissionCounts,
+    recentEvents,
+    totalMissionCount,
   ] = await Promise.all([
     prisma.department.findMany({
       include: {
@@ -185,6 +216,10 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
       _count: { status: true },
     }),
     prisma.revenue.aggregate({ _sum: { amount: true } }),
+    getMissionStatusCounts(),
+    getDepartmentMissionCounts(),
+    getRecentMissionEvents(8),
+    prisma.mission.count(),
   ]);
 
   const pending =
@@ -300,9 +335,31 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
       activeTasks: pipelineHealth.activeTasks,
     },
     totals: {
-      missions: missions.length,
+      missions: totalMissionCount,
       totalRevenue,
       netProfit: totalRevenue,
     },
+    recentMissions: missions.slice(0, 8).map((m) => ({
+      id: m.id,
+      title: m.title,
+      status: m.status,
+      ownerPersona: m.ownerPersona,
+      departmentKey: m.department.key,
+      updatedAt: m.updatedAt.toISOString(),
+    })),
+    recentEvents: recentEvents.map((e) => ({
+      id: e.id,
+      missionId: e.missionId,
+      missionTitle: e.mission.title,
+      action: e.action,
+      detail: e.detail,
+      agentPersona: e.agentPersona,
+      createdAt: e.createdAt.toISOString(),
+    })),
+    missionCountsByStatus: missionStatusCounts,
+    departmentMissionCounts: departmentMissionCounts.map((row) => ({
+      departmentKey: row.departmentKey,
+      count: row.count,
+    })),
   };
 }
