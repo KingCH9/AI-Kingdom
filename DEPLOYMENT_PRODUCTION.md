@@ -221,12 +221,29 @@ Ensure Railway PostgreSQL is linked and `DATABASE_URL` references the Postgres p
 
 ### Migration failed on release
 
+If a migration failed (e.g. UTF-8 BOM in `migration.sql`, P3009):
+
 ```bash
-railway run npx prisma migrate status
-railway run npx prisma migrate deploy
+# Migration failed before applying SQL — mark as rolled back, then redeploy
+railway run npx prisma migrate resolve --rolled-back 20260609000000_baseline
+railway run npm run db:migrate:deploy
 ```
 
-Check logs for SQL errors. See `docs/POSTGRESQL_MIGRATION_PLAN.md`.
+Use `--rolled-back` when the migration **did not** successfully create schema (typical BOM/SQL error).
+
+Use `--applied` only if you manually applied the migration SQL and need to mark it complete:
+
+```bash
+railway run npx prisma migrate resolve --applied 20260609000000_baseline
+```
+
+Check status:
+
+```bash
+railway run npx prisma migrate status
+```
+
+See `docs/POSTGRESQL_MIGRATION_PLAN.md`.
 
 ### Health returns 503
 
