@@ -66,13 +66,59 @@ function isRailwayNetwork() {
   );
 }
 
-function runMigrateDeploy() {
-  execSync("npx prisma migrate deploy", { stdio: "inherit", env: process.env });
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function runMigrateDeployOnce() {
+  try {
+    execSync("npx prisma migrate deploy", {
+      stdio: ["inherit", "pipe", "pipe"],
+      env: process.env,
+      encoding: "utf8",
+    });
+    return { ok: true, output: "" };
+  } catch (err) {
+    const output = `${err?.stdout ?? ""}${err?.stderr ?? ""}${err?.message ?? err}`;
+    return { ok: false, output: String(output) };
+  }
+}
+
+async function runMigrateDeployWithRetry(maxAttempts = 4) {
+  const delaysMs = [0, 5000, 10000, 20000];
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    if (attempt > 1) {
+      const wait = delaysMs[attempt - 1] ?? 20000;
+      console.log(
+        `[migrate] Retry ${attempt}/${maxAttempts} after ${wait / 1000}s (connection pressure)...`
+      );
+      await sleep(wait);
+    }
+
+    const result = runMigrateDeployOnce();
+    if (result.ok) {
+      return;
+    }
+
+    const transient =
+      result.output.includes("too many clients") ||
+      result.output.includes("Too many database connections");
+
+    if (!transient || attempt === maxAttempts) {
+      if (result.output.trim()) {
+        process.stderr.write(result.output);
+      }
+      throw new Error(result.output || "prisma migrate deploy failed");
+    }
+
+    console.warn("[migrate] Transient Postgres connection limit — will retry.");
+  }
 }
 
 console.log("[migrate] Running prisma migrate deploy...");
 try {
-  runMigrateDeploy();
+  await runMigrateDeployWithRetry();
   console.log("[migrate] Migrations applied successfully.");
 } catch {
   if (
