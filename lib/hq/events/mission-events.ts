@@ -11,6 +11,7 @@ export const MISSION_EVENT_ACTIONS = {
   AI_COST: "ai_cost",
   ORCHESTRATION_HANDOFF: "orchestration_handoff",
   BUILD_COMPLETED: "build_completed",
+  GROWTH_TRACKED: "growth_tracked",
 } as const;
 
 export type MissionEventAction =

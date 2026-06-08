@@ -50,6 +50,10 @@ export default function RootLayout({
                 🔨 Forge
               </Link>
 
+              <Link href="/hq/nova">
+                📈 Nova
+              </Link>
+
               <Link href="/hq/finance">
                 💰 Finance
               </Link>

@@ -19,7 +19,7 @@ import {
   getRecentMissionEvents,
 } from "../missions/mission-service";
 import { getFinanceSnapshot } from "../finance/queries";
-import { getEmpireScoreSnapshot, getAtlasEmpireSummary, getAthenaEmpireSummary, getForgeEmpireSummary } from "../empire/queries";
+import { getEmpireScoreSnapshot, getAtlasEmpireSummary, getAthenaEmpireSummary, getForgeEmpireSummary, getNovaEmpireSummary } from "../empire/queries";
 
 export type HqDepartmentSnapshot = {
   key: DepartmentKey;
@@ -176,6 +176,21 @@ export type HqSnapshot = {
     totalForgeRevenue: number;
     averageAgentScore: number;
   };
+  novaSummary: {
+    topAgent: {
+      agentKey: string;
+      name: string;
+      score: number;
+      level: number;
+      xp: number;
+    } | null;
+    growthScore: number;
+    totalRevenue: number;
+    launchedMissions: number;
+    growingMissions: number;
+    profitableMissions: number;
+    trackedMissions: number;
+  };
 };
 
 function deriveAgentStatus(
@@ -268,6 +283,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     atlasSummary,
     athenaIntelligenceSummary,
     forgeSummary,
+    novaSummary,
   ] = await Promise.all([
     prisma.department.findMany({
       include: {
@@ -309,6 +325,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     getAtlasEmpireSummary(),
     getAthenaEmpireSummary(),
     getForgeEmpireSummary(),
+    getNovaEmpireSummary(),
   ]);
 
   const pending =
@@ -524,6 +541,23 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
       totalStoresLaunched: forgeSummary.totalStoresLaunched,
       totalForgeRevenue: forgeSummary.totalForgeRevenue,
       averageAgentScore: forgeSummary.averageAgentScore,
+    },
+    novaSummary: {
+      topAgent: novaSummary.topAgent
+        ? {
+            agentKey: novaSummary.topAgent.agentKey,
+            name: novaSummary.topAgent.name,
+            score: novaSummary.topAgent.score,
+            level: novaSummary.topAgent.level,
+            xp: novaSummary.topAgent.xp,
+          }
+        : null,
+      growthScore: novaSummary.growthScore,
+      totalRevenue: novaSummary.totalRevenue,
+      launchedMissions: novaSummary.launchedMissions,
+      growingMissions: novaSummary.growingMissions,
+      profitableMissions: novaSummary.profitableMissions,
+      trackedMissions: novaSummary.trackedMissions,
     },
   };
 }

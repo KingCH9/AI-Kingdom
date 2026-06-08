@@ -346,3 +346,9 @@ export async function getForgeEmpireSummary() {
   const { getForgeWorkstationSummary } = await import("../forge/workstation-dashboard");
   return getForgeWorkstationSummary();
 }
+
+/** Nova growth metrics summary for empire/HQ integration. */
+export async function getNovaEmpireSummary() {
+  const { getNovaGrowthSummary } = await import("../nova/growth-dashboard");
+  return getNovaGrowthSummary();
+}

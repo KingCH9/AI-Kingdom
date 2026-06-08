@@ -316,6 +316,44 @@ export default async function HqPage() {
       </section>
 
       <section className="mb-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-2xl font-bold">📈 Nova Growth Engine</h2>
+            <p className="text-sm text-gray-500">
+              {hq.novaSummary.topAgent
+                ? `Top agent ${hq.novaSummary.topAgent.name} · score ${hq.novaSummary.topAgent.score}`
+                : "Growth metrics from launching, growing, and profitable missions"}
+            </p>
+          </div>
+          <Link href="/hq/nova" className="text-sm text-blue-400 hover:underline">
+            Nova growth dashboard →
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl">
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Growth Score</p>
+            <p className="text-2xl font-bold">{hq.novaSummary.growthScore}</p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Nova Revenue</p>
+            <p className="text-2xl font-bold text-green-400">
+              {formatGbp(hq.novaSummary.totalRevenue)}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Launching</p>
+            <p className="text-2xl font-bold">{hq.novaSummary.launchedMissions}</p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Top Agent</p>
+            <p className="text-lg font-bold truncate">
+              {hq.novaSummary.topAgent?.name ?? "—"}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mb-10">
         <h2 className="text-2xl font-bold mb-4">Ventures by Type</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
           {hq.ventureDistribution.map((vt) => (
