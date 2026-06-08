@@ -21,6 +21,7 @@ import {
 import { getFinanceSnapshot } from "../finance/queries";
 import { getPerformanceSummary } from "../performance/performance-queries";
 import { getEmpireScoreV2Summary } from "../empire/score-v2-dashboard";
+import { getTopPerformersSummary } from "../workstations";
 import { getEmpireScoreSnapshot, getAtlasEmpireSummary, getAthenaEmpireSummary, getForgeEmpireSummary, getNovaEmpireSummary, getMercuryEmpireSummary } from "../empire/queries";
 
 export type HqDepartmentSnapshot = {
@@ -266,6 +267,33 @@ export type HqSnapshot = {
     totalAgents: number;
     totalScouts: number;
   };
+  topPerformersSummary: {
+    topAgent: {
+      agentKey: string;
+      name: string;
+      score: number;
+      level: number;
+      xp: number;
+    } | null;
+    topScout: {
+      scoutKey: string;
+      name: string;
+      score: number;
+      level: number;
+      xp: number;
+    } | null;
+    highestXpAgent: {
+      agentKey: string;
+      name: string;
+      xp: number;
+      level: number;
+    } | null;
+    highestRevenueAgent: {
+      agentKey: string;
+      name: string;
+      revenueInfluenced: number;
+    } | null;
+  };
 };
 
 function deriveAgentStatus(
@@ -362,6 +390,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     mercurySummary,
     performanceSummary,
     empireScoreV2Summary,
+    topPerformersSummary,
   ] = await Promise.all([
     prisma.department.findMany({
       include: {
@@ -407,6 +436,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     getMercuryEmpireSummary(),
     getPerformanceSummary(),
     getEmpireScoreV2Summary(),
+    getTopPerformersSummary(),
   ]);
 
   const pending =
@@ -711,6 +741,42 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
       })),
       totalAgents: performanceSummary.totalAgents,
       totalScouts: performanceSummary.totalScouts,
+    },
+    topPerformersSummary: {
+      topAgent: topPerformersSummary.topAgent
+        ? {
+            agentKey: topPerformersSummary.topAgent.agentKey,
+            name: topPerformersSummary.topAgent.name,
+            score: topPerformersSummary.topAgent.score,
+            level: topPerformersSummary.topAgent.level,
+            xp: topPerformersSummary.topAgent.xp,
+          }
+        : null,
+      topScout: topPerformersSummary.topScout
+        ? {
+            scoutKey: topPerformersSummary.topScout.scoutKey,
+            name: topPerformersSummary.topScout.name,
+            score: topPerformersSummary.topScout.score,
+            level: topPerformersSummary.topScout.level,
+            xp: topPerformersSummary.topScout.xp,
+          }
+        : null,
+      highestXpAgent: topPerformersSummary.highestXpAgent
+        ? {
+            agentKey: topPerformersSummary.highestXpAgent.agentKey,
+            name: topPerformersSummary.highestXpAgent.name,
+            xp: topPerformersSummary.highestXpAgent.xp,
+            level: topPerformersSummary.highestXpAgent.level,
+          }
+        : null,
+      highestRevenueAgent: topPerformersSummary.highestRevenueAgent
+        ? {
+            agentKey: topPerformersSummary.highestRevenueAgent.agentKey,
+            name: topPerformersSummary.highestRevenueAgent.name,
+            revenueInfluenced:
+              topPerformersSummary.highestRevenueAgent.revenueInfluenced,
+          }
+        : null,
     },
   };
 }

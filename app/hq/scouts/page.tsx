@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { getAthenaIntelligenceSnapshot } from "@/lib/hq/athena/intelligence-dashboard";
+import { getScoutWorkstationSnapshot } from "@/lib/hq/workstations";
+import { ScoutCard } from "@/components/hq/workstation-ui";
 import { formatGbp } from "@/components/hq/finance-ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function ScoutsPage() {
-  const intel = await getAthenaIntelligenceSnapshot();
+  const [intel, workstation] = await Promise.all([
+    getAthenaIntelligenceSnapshot(),
+    getScoutWorkstationSnapshot(),
+  ]);
 
   return (
     <div className="p-8 max-w-7xl">
@@ -13,15 +18,60 @@ export default async function ScoutsPage() {
         <Link href="/hq" className="text-blue-400 hover:underline text-sm mb-2 inline-block">
           ← HQ
         </Link>
-        <h1 className="text-4xl font-bold mb-2">🔬 Athena Intelligence</h1>
+        <h1 className="text-4xl font-bold mb-2">🔎 Scout Workstations</h1>
         <p className="text-gray-400 max-w-2xl">
-          Scout performance metrics — XP, levels, scores, and rankings computed
-          from opportunities, missions, and revenue. Advisory only.
+          Athena intelligence and scout workstation profiles — XP, levels, scores,
+          rankings, and revenue leaders. Advisory only.
         </p>
         <p className="text-xs text-gray-500 mt-2">
-          {new Date(intel.generatedAt).toLocaleString("en-GB")}
+          {new Date(workstation.generatedAt).toLocaleString("en-GB")} ·{" "}
+          {workstation.scouts.length} scouts tracked
         </p>
       </div>
+
+      <section className="mb-10">
+        <h2 className="text-2xl font-bold mb-4">Top Performers</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-3xl">
+          <div className="p-4 rounded-xl border border-emerald-500/30 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">#1 Scout</p>
+            <p className="text-lg font-bold truncate">
+              {workstation.topPerformers.topScout?.name ?? "—"}
+            </p>
+            <p className="text-xs text-gray-500">
+              Score {workstation.topPerformers.topScout?.score ?? 0}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Highest XP</p>
+            <p className="text-lg font-bold truncate">
+              {workstation.topPerformers.highestXpScout?.name ?? "—"}
+            </p>
+            <p className="text-xs text-gray-500">
+              {workstation.topPerformers.highestXpScout?.xp ?? 0} XP
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-green-500/30 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Revenue Leader</p>
+            <p className="text-lg font-bold truncate">
+              {workstation.topPerformers.highestRevenueScout?.name ?? "—"}
+            </p>
+            <p className="text-xs text-green-400">
+              {formatGbp(
+                workstation.topPerformers.highestRevenueScout?.revenueGenerated ?? 0
+              )}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mb-10">
+        <h2 className="text-2xl font-bold mb-4">Scout Profiles</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {workstation.scouts.map((scout) => (
+            <ScoutCard key={scout.scoutKey} scout={scout} />
+          ))}
+        </div>
+      </section>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
         {[
@@ -59,24 +109,6 @@ export default async function ScoutsPage() {
       </div>
 
       <section className="mb-10">
-        <h2 className="text-2xl font-bold mb-4">Top Scouts</h2>
-        <div className="grid md:grid-cols-3 gap-3">
-          {intel.topScouts.map((scout, index) => (
-            <div
-              key={scout.scoutKey}
-              className="p-4 rounded-xl border border-emerald-500/20 bg-gray-900"
-            >
-              <p className="text-xs text-gray-500">#{index + 1}</p>
-              <p className="font-semibold text-emerald-300">{scout.name}</p>
-              <p className="text-sm text-gray-400 mt-1">
-                Score {scout.score} · Level {scout.level} · {scout.xp} XP
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="mb-10">
         <h2 className="text-2xl font-bold mb-4">Scout Rankings</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
@@ -94,9 +126,16 @@ export default async function ScoutsPage() {
               </tr>
             </thead>
             <tbody>
-              {intel.scouts.map((scout) => (
+              {workstation.scouts.map((scout) => (
                 <tr key={scout.scoutKey} className="border-b border-gray-900">
-                  <td className="py-3 pr-4 font-medium">{scout.name}</td>
+                  <td className="py-3 pr-4 font-medium">
+                    <Link
+                      href={`/hq/scouts/${scout.scoutKey}`}
+                      className="hover:text-emerald-300"
+                    >
+                      {scout.name}
+                    </Link>
+                  </td>
                   <td className="py-3 pr-4">{scout.level}</td>
                   <td className="py-3 pr-4">{scout.xp}</td>
                   <td className="py-3 pr-4 font-bold">{scout.score}</td>
@@ -114,14 +153,16 @@ export default async function ScoutsPage() {
 
       <div className="grid lg:grid-cols-2 gap-8 mb-10">
         <section>
-          <h2 className="text-xl font-bold mb-3">Revenue Rankings</h2>
+          <h2 className="text-xl font-bold mb-3">Revenue Leaders</h2>
           <ul className="space-y-2">
-            {intel.scoutRankings.highestRevenueScouts.map((s) => (
-              <li
-                key={s.scoutKey}
-                className="p-3 rounded-lg border border-gray-800 bg-gray-900 text-sm"
-              >
-                {s.name} — {formatGbp(s.revenueGenerated)}
+            {workstation.rankings.highestRevenue.map((s) => (
+              <li key={s.scoutKey}>
+                <Link
+                  href={`/hq/scouts/${s.scoutKey}`}
+                  className="p-3 rounded-lg border border-gray-800 bg-gray-900 text-sm hover:border-gray-700 block"
+                >
+                  {s.name} — {formatGbp(s.revenueGenerated)}
+                </Link>
               </li>
             ))}
           </ul>
@@ -133,11 +174,13 @@ export default async function ScoutsPage() {
               <li className="text-gray-600 text-sm">No terminal missions yet.</li>
             ) : (
               intel.scoutRankings.highestSuccessRateScouts.map((s) => (
-                <li
-                  key={s.scoutKey}
-                  className="p-3 rounded-lg border border-gray-800 bg-gray-900 text-sm"
-                >
-                  {s.name} — {s.successRate}%
+                <li key={s.scoutKey}>
+                  <Link
+                    href={`/hq/scouts/${s.scoutKey}`}
+                    className="p-3 rounded-lg border border-gray-800 bg-gray-900 text-sm hover:border-gray-700 block"
+                  >
+                    {s.name} — {s.successRate}%
+                  </Link>
                 </li>
               ))
             )}
@@ -146,12 +189,13 @@ export default async function ScoutsPage() {
       </div>
 
       <section>
-        <h2 className="text-2xl font-bold mb-4">Scout Levels</h2>
+        <h2 className="text-2xl font-bold mb-4">Scout Levels (Athena Intelligence)</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
           {intel.scouts.map((scout) => (
-            <div
+            <Link
               key={scout.scoutKey}
-              className="p-4 rounded-xl border border-gray-800 bg-gray-900"
+              href={`/hq/scouts/${scout.scoutKey}`}
+              className="p-4 rounded-xl border border-gray-800 bg-gray-900 hover:border-gray-700 block"
             >
               <p className="font-semibold">{scout.name}</p>
               <p className="text-2xl font-bold text-blue-300 mt-1">
@@ -168,7 +212,7 @@ export default async function ScoutsPage() {
                 {scout.xpBreakdown.fromMissionsCreated}, revenue +
                 {scout.xpBreakdown.fromRevenue}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
       </section>

@@ -34,6 +34,10 @@ export default function RootLayout({
                 🎯 Missions
               </Link>
 
+              <Link href="/hq/agents">
+                👥 Agents
+              </Link>
+
               <Link href="/hq/command">
                 🎛️ Command
               </Link>
@@ -43,7 +47,7 @@ export default function RootLayout({
               </Link>
 
               <Link href="/hq/scouts">
-                🔬 Scouts
+                🔎 Scouts
               </Link>
 
               <Link href="/hq/forge">

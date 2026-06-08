@@ -438,52 +438,90 @@ export default async function HqPage() {
       <section className="mb-10">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
           <div>
-            <h2 className="text-2xl font-bold">🏆 Performance Rankings</h2>
+            <h2 className="text-2xl font-bold">🏆 Top Performers</h2>
             <p className="text-sm text-gray-500">
-              Persistent XP snapshots — computed metrics remain authoritative
+              Agent & scout workstation leaders — read-only profiles
             </p>
+          </div>
+          <div className="flex gap-4 text-sm">
+            <Link href="/hq/agents" className="text-blue-400 hover:underline">
+              Agent workstations →
+            </Link>
+            <Link href="/hq/scouts" className="text-blue-400 hover:underline">
+              Scout workstations →
+            </Link>
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mb-6">
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Top Agent</p>
+          <Link
+            href={
+              hq.topPerformersSummary.topAgent
+                ? `/hq/agents/${hq.topPerformersSummary.topAgent.agentKey}`
+                : "/hq/agents"
+            }
+            className="p-4 rounded-xl border border-amber-500/30 bg-gray-900 hover:border-amber-500/50 block"
+          >
+            <p className="text-xs text-gray-500 uppercase">#1 Agent</p>
             <p className="text-lg font-bold truncate">
-              {hq.performanceSummary.topAgent?.agentKey.replace(/_/g, " ") ?? "—"}
+              {hq.topPerformersSummary.topAgent?.name ?? "—"}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Score {hq.performanceSummary.topAgent?.score ?? 0} · L
-              {hq.performanceSummary.topAgent?.level ?? 0}
+              Score {hq.topPerformersSummary.topAgent?.score ?? 0} · L
+              {hq.topPerformersSummary.topAgent?.level ?? 0}
             </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Top Scout</p>
+          </Link>
+          <Link
+            href={
+              hq.topPerformersSummary.topScout
+                ? `/hq/scouts/${hq.topPerformersSummary.topScout.scoutKey}`
+                : "/hq/scouts"
+            }
+            className="p-4 rounded-xl border border-emerald-500/30 bg-gray-900 hover:border-emerald-500/50 block"
+          >
+            <p className="text-xs text-gray-500 uppercase">#1 Scout</p>
             <p className="text-lg font-bold truncate">
-              {hq.performanceSummary.topScout?.scoutKey.replace(/_/g, " ") ?? "—"}
+              {hq.topPerformersSummary.topScout?.name ?? "—"}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Score {hq.performanceSummary.topScout?.score ?? 0} · L
-              {hq.performanceSummary.topScout?.level ?? 0}
+              Score {hq.topPerformersSummary.topScout?.score ?? 0} · L
+              {hq.topPerformersSummary.topScout?.level ?? 0}
             </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Highest Level</p>
-            <p className="text-2xl font-bold">{hq.performanceSummary.highestLevel}</p>
-            <p className="text-xs text-gray-500 mt-1 truncate">
-              {hq.performanceSummary.highestLevelAgent?.agentKey.replace(/_/g, " ") ??
-                hq.performanceSummary.highestLevelScout?.scoutKey.replace(/_/g, " ") ??
-                "—"}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
-            <p className="text-xs text-gray-500 uppercase">Tracked</p>
-            <p className="text-2xl font-bold">
-              {hq.performanceSummary.totalAgents + hq.performanceSummary.totalScouts}
+          </Link>
+          <Link
+            href={
+              hq.topPerformersSummary.highestXpAgent
+                ? `/hq/agents/${hq.topPerformersSummary.highestXpAgent.agentKey}`
+                : "/hq/agents"
+            }
+            className="p-4 rounded-xl border border-gray-700 bg-gray-900 hover:border-gray-600 block"
+          >
+            <p className="text-xs text-gray-500 uppercase">Highest XP</p>
+            <p className="text-lg font-bold truncate">
+              {hq.topPerformersSummary.highestXpAgent?.name ?? "—"}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              {hq.performanceSummary.totalAgents} agents · {hq.performanceSummary.totalScouts}{" "}
-              scouts
+              {hq.topPerformersSummary.highestXpAgent?.xp ?? 0} XP · L
+              {hq.topPerformersSummary.highestXpAgent?.level ?? 0}
             </p>
-          </div>
+          </Link>
+          <Link
+            href={
+              hq.topPerformersSummary.highestRevenueAgent
+                ? `/hq/agents/${hq.topPerformersSummary.highestRevenueAgent.agentKey}`
+                : "/hq/agents"
+            }
+            className="p-4 rounded-xl border border-green-500/30 bg-gray-900 hover:border-green-500/50 block"
+          >
+            <p className="text-xs text-gray-500 uppercase">Highest Revenue Influence</p>
+            <p className="text-lg font-bold truncate">
+              {hq.topPerformersSummary.highestRevenueAgent?.name ?? "—"}
+            </p>
+            <p className="text-xs text-green-400 mt-1">
+              {formatGbp(
+                hq.topPerformersSummary.highestRevenueAgent?.revenueInfluenced ?? 0
+              )}
+            </p>
+          </Link>
         </div>
         <div className="grid md:grid-cols-2 gap-6">
           <div>
@@ -493,20 +531,22 @@ export default async function HqPage() {
                 <li className="text-sm text-gray-500">No agent snapshots yet.</li>
               ) : (
                 hq.performanceSummary.topAgents.map((agent, index) => (
-                  <li
-                    key={agent.agentKey}
-                    className="p-3 rounded-lg border border-gray-700 bg-gray-900 flex justify-between gap-2"
-                  >
-                    <div>
-                      <p className="text-xs text-gray-500">#{index + 1}</p>
-                      <p className="font-medium capitalize">
-                        {agent.agentKey.replace(/_/g, " ")}
+                  <li key={agent.agentKey}>
+                    <Link
+                      href={`/hq/agents/${agent.agentKey}`}
+                      className="p-3 rounded-lg border border-gray-700 bg-gray-900 flex justify-between gap-2 hover:border-gray-600 block"
+                    >
+                      <div>
+                        <p className="text-xs text-gray-500">#{index + 1}</p>
+                        <p className="font-medium capitalize">
+                          {agent.agentKey.replace(/_/g, " ")}
+                        </p>
+                        <p className="text-xs text-gray-500">{agent.department}</p>
+                      </div>
+                      <p className="text-sm text-amber-300 shrink-0">
+                        {agent.score} · L{agent.level}
                       </p>
-                      <p className="text-xs text-gray-500">{agent.department}</p>
-                    </div>
-                    <p className="text-sm text-amber-300 shrink-0">
-                      {agent.score} · L{agent.level}
-                    </p>
+                    </Link>
                   </li>
                 ))
               )}
@@ -519,19 +559,21 @@ export default async function HqPage() {
                 <li className="text-sm text-gray-500">No scout snapshots yet.</li>
               ) : (
                 hq.performanceSummary.topScouts.map((scout, index) => (
-                  <li
-                    key={scout.scoutKey}
-                    className="p-3 rounded-lg border border-gray-700 bg-gray-900 flex justify-between gap-2"
-                  >
-                    <div>
-                      <p className="text-xs text-gray-500">#{index + 1}</p>
-                      <p className="font-medium capitalize">
-                        {scout.scoutKey.replace(/_/g, " ")}
+                  <li key={scout.scoutKey}>
+                    <Link
+                      href={`/hq/scouts/${scout.scoutKey}`}
+                      className="p-3 rounded-lg border border-gray-700 bg-gray-900 flex justify-between gap-2 hover:border-gray-600 block"
+                    >
+                      <div>
+                        <p className="text-xs text-gray-500">#{index + 1}</p>
+                        <p className="font-medium capitalize">
+                          {scout.scoutKey.replace(/_/g, " ")}
+                        </p>
+                      </div>
+                      <p className="text-sm text-emerald-300 shrink-0">
+                        {scout.score} · L{scout.level}
                       </p>
-                    </div>
-                    <p className="text-sm text-emerald-300 shrink-0">
-                      {scout.score} · L{scout.level}
-                    </p>
+                    </Link>
                   </li>
                 ))
               )}
