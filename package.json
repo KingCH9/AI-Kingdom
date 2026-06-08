@@ -12,6 +12,7 @@
     "start:production": "node scripts/railway-start.mjs",
     "lint": "eslint .",
     "db:migrate:deploy": "node scripts/migrate-deploy.mjs",
+    "db:railway:migrate": "node scripts/railway-postgres-migrate.mjs",
     "db:verify-postgres": "tsx scripts/verify-postgres-migrations.ts",
     "worker": "tsx --env-file=.env worker.ts",
     "task-worker": "tsx --env-file=.env task-worker.ts"

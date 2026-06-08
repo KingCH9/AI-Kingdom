@@ -219,14 +219,23 @@ Ensure Railway PostgreSQL is linked and `DATABASE_URL` references the Postgres p
 - Check `DATABASE_URL` format: `postgresql://user:pass@host:port/db`
 - Verify network linking between web service and database
 
-### Migration failed on release
+### Migration failed on release (P3009 / stuck baseline)
 
-If a migration failed (e.g. UTF-8 BOM in `migration.sql`, P3009):
+Root cause on first deploy: `20260609000000_baseline/migration.sql` had a UTF-8 BOM, so
+PostgreSQL rejected the first SQL line. Prisma records the migration as **failed** and
+blocks further deploys until the state is cleared. The BOM is fixed on `main` (commit
+`6d26194`); the Railway database still needs a one-time resolve.
+
+**Do not run `migrate resolve` locally without setting the Railway PostgreSQL URL** —
+local `.env` uses SQLite (`file:./dev.db`) and would target the wrong database.
 
 ```bash
+railway login
+railway link
 # Migration failed before applying SQL — mark as rolled back, then redeploy
 railway run npx prisma migrate resolve --rolled-back 20260609000000_baseline
 railway run npm run db:migrate:deploy
+railway run npx prisma migrate status
 ```
 
 Use `--rolled-back` when the migration **did not** successfully create schema (typical BOM/SQL error).

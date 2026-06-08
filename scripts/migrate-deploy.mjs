@@ -33,8 +33,20 @@ const scheme = url.startsWith("postgresql://")
 
 console.log(`[migrate] DATABASE_URL scheme: ${scheme}`);
 
+const isProduction =
+  process.env.NODE_ENV === "production" ||
+  Boolean(process.env.RAILWAY_ENVIRONMENT) ||
+  Boolean(process.env.RAILWAY_PROJECT_ID);
+
 if (!url) {
   console.error("[migrate] DATABASE_URL is not set — cannot run migrations");
+  process.exit(1);
+}
+
+if (isProduction && (scheme === "sqlite" || scheme === "missing")) {
+  console.error(
+    "[migrate] Production requires a PostgreSQL DATABASE_URL — link Railway Postgres to this service"
+  );
   process.exit(1);
 }
 

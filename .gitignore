@@ -10,6 +10,9 @@
 .env.test.local
 .env.production.local
 
+# Railway PostgreSQL URL for local migration commands (never commit)
+.env.railway
+
 # Allow committed templates only
 !.env.example
 !.env.production.example
