@@ -16,6 +16,7 @@ import {
   computeForgeXp,
   type ForgeXpBreakdown,
 } from "./agent-xp";
+import { persistForgeAgentPerformance } from "../performance/performance-sync";
 
 export type ForgeAgentRecord = {
   agentKey: string;
@@ -233,6 +234,8 @@ export async function getForgeWorkstationSnapshot(): Promise<ForgeWorkstationSna
     (sum, m) => sum + m.revenueGbp,
     0
   );
+
+  await persistForgeAgentPerformance(agents);
 
   return {
     generatedAt: new Date().toISOString(),

@@ -422,3 +422,42 @@ model AgentLog {
   @@index([taskId])
   @@index([storeId])
 }
+
+model AgentPerformance {
+  id                Int      @id @default(autoincrement())
+  agentKey          String   @unique
+  department        String
+  xp                Int      @default(0)
+  level             Int      @default(1)
+  score             Float    @default(0)
+  missionsWorked    Int      @default(0)
+  missionsCompleted Int      @default(0)
+  revenueInfluenced Float    @default(0)
+  lastCalculatedAt  DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([department])
+  @@index([level])
+  @@index([score])
+}
+
+model ScoutPerformance {
+  id                    Int      @id @default(autoincrement())
+  scoutKey              String   @unique
+  xp                    Int      @default(0)
+  level                 Int      @default(1)
+  score                 Float    @default(0)
+  opportunitiesFound    Int      @default(0)
+  opportunitiesApproved Int      @default(0)
+  missionsCreated       Int      @default(0)
+  missionsLaunched      Int      @default(0)
+  revenueGenerated      Float    @default(0)
+  successRate           Float    @default(0)
+  lastCalculatedAt      DateTime @default(now())
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([level])
+  @@index([score])
+}

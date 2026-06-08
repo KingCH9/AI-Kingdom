@@ -394,6 +394,111 @@ export default async function HqPage() {
       </section>
 
       <section className="mb-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-2xl font-bold">🏆 Performance Rankings</h2>
+            <p className="text-sm text-gray-500">
+              Persistent XP snapshots — computed metrics remain authoritative
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mb-6">
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Top Agent</p>
+            <p className="text-lg font-bold truncate">
+              {hq.performanceSummary.topAgent?.agentKey.replace(/_/g, " ") ?? "—"}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Score {hq.performanceSummary.topAgent?.score ?? 0} · L
+              {hq.performanceSummary.topAgent?.level ?? 0}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Top Scout</p>
+            <p className="text-lg font-bold truncate">
+              {hq.performanceSummary.topScout?.scoutKey.replace(/_/g, " ") ?? "—"}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Score {hq.performanceSummary.topScout?.score ?? 0} · L
+              {hq.performanceSummary.topScout?.level ?? 0}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Highest Level</p>
+            <p className="text-2xl font-bold">{hq.performanceSummary.highestLevel}</p>
+            <p className="text-xs text-gray-500 mt-1 truncate">
+              {hq.performanceSummary.highestLevelAgent?.agentKey.replace(/_/g, " ") ??
+                hq.performanceSummary.highestLevelScout?.scoutKey.replace(/_/g, " ") ??
+                "—"}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Tracked</p>
+            <p className="text-2xl font-bold">
+              {hq.performanceSummary.totalAgents + hq.performanceSummary.totalScouts}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              {hq.performanceSummary.totalAgents} agents · {hq.performanceSummary.totalScouts}{" "}
+              scouts
+            </p>
+          </div>
+        </div>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <h3 className="text-lg font-semibold mb-3">Agent Leaderboard</h3>
+            <ul className="space-y-2">
+              {hq.performanceSummary.topAgents.length === 0 ? (
+                <li className="text-sm text-gray-500">No agent snapshots yet.</li>
+              ) : (
+                hq.performanceSummary.topAgents.map((agent, index) => (
+                  <li
+                    key={agent.agentKey}
+                    className="p-3 rounded-lg border border-gray-700 bg-gray-900 flex justify-between gap-2"
+                  >
+                    <div>
+                      <p className="text-xs text-gray-500">#{index + 1}</p>
+                      <p className="font-medium capitalize">
+                        {agent.agentKey.replace(/_/g, " ")}
+                      </p>
+                      <p className="text-xs text-gray-500">{agent.department}</p>
+                    </div>
+                    <p className="text-sm text-amber-300 shrink-0">
+                      {agent.score} · L{agent.level}
+                    </p>
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold mb-3">Scout Leaderboard</h3>
+            <ul className="space-y-2">
+              {hq.performanceSummary.topScouts.length === 0 ? (
+                <li className="text-sm text-gray-500">No scout snapshots yet.</li>
+              ) : (
+                hq.performanceSummary.topScouts.map((scout, index) => (
+                  <li
+                    key={scout.scoutKey}
+                    className="p-3 rounded-lg border border-gray-700 bg-gray-900 flex justify-between gap-2"
+                  >
+                    <div>
+                      <p className="text-xs text-gray-500">#{index + 1}</p>
+                      <p className="font-medium capitalize">
+                        {scout.scoutKey.replace(/_/g, " ")}
+                      </p>
+                    </div>
+                    <p className="text-sm text-emerald-300 shrink-0">
+                      {scout.score} · L{scout.level}
+                    </p>
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section className="mb-10">
         <h2 className="text-2xl font-bold mb-4">Ventures by Type</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
           {hq.ventureDistribution.map((vt) => (

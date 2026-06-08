@@ -19,6 +19,7 @@ import {
   analyzeCampaignPerformance,
   type CampaignPerformance,
 } from "./campaign-analysis";
+import { persistNovaAgentPerformance } from "../performance/performance-sync";
 
 export type NovaAgentRecord = {
   agentKey: string;
@@ -174,6 +175,8 @@ export async function getNovaGrowthSnapshot(): Promise<NovaGrowthSnapshot> {
         : 0,
     topAgent,
   };
+
+  await persistNovaAgentPerformance(agents);
 
   return {
     generatedAt: new Date().toISOString(),

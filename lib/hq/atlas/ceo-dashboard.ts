@@ -25,6 +25,10 @@ import {
   getScoutRankingsForAtlas,
   type ScoutRankings,
 } from "../athena/intelligence-dashboard";
+import {
+  countCompletedMissions,
+  persistAtlasPerformance,
+} from "../performance/performance-sync";
 
 export type AtlasDashboardSnapshot = {
   generatedAt: string;
@@ -111,12 +115,25 @@ export async function getAtlasDashboardSnapshot(): Promise<AtlasDashboardSnapsho
     ACTIVE_STATUS_SET.has(m.status)
   ).length;
 
+  const recommendationCounts = recommendationSummary(recommendations);
+
+  await persistAtlasPerformance({
+    empireScore: empire.empireScore,
+    totalMissions: missionInputs.length,
+    activeMissions,
+    fundCount: recommendations.fund.length,
+    revenueInfluenced: missionInputs.reduce((sum, m) => sum + m.revenueGbp, 0),
+    completedMissions: countCompletedMissions(
+      missionInputs.map((mission) => mission.status)
+    ),
+  });
+
   return {
     generatedAt: new Date().toISOString(),
     empireScore: empire.empireScore,
     priorityMissions,
     recommendations,
-    recommendationCounts: recommendationSummary(recommendations),
+    recommendationCounts,
     departmentWorkloads,
     workloadSummary,
     portfolioSummary,

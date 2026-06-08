@@ -18,6 +18,7 @@ import {
   type MissionProfitability,
 } from "./profitability-engine";
 import { computeAverageRoi, rankByProfit, rankByRoi } from "./roi-analysis";
+import { persistMercuryAgentPerformance } from "../performance/performance-sync";
 
 export type MercuryAgentRecord = {
   agentKey: MercuryAgentKey;
@@ -196,6 +197,8 @@ export async function getMercurySnapshot(): Promise<MercurySnapshot> {
     averageLevel,
     topAgent,
   };
+
+  await persistMercuryAgentPerformance(agents);
 
   return {
     generatedAt: new Date().toISOString(),

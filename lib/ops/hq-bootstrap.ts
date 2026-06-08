@@ -17,6 +17,7 @@ import {
   seedVentureEngine,
 } from "@/lib/hq/seed/venture-engine";
 import { countScoutGeneratedOpportunities } from "@/lib/hq/missions/mission-from-scout";
+import { backfillPerformanceSnapshots } from "@/lib/hq/performance/backfill";
 
 const LOG_PREFIX = "[hq-bootstrap]";
 
@@ -186,9 +187,10 @@ export async function ensureHqFoundation(): Promise<void> {
     const result = await backfillMissionsFromEmpire();
     const ventureBackfill = await backfillMissionVentureTypes();
     const scoutCounts = await countScoutGeneratedOpportunities();
+    const performanceBackfill = await backfillPerformanceSnapshots();
 
     console.log(
-      `${LOG_PREFIX} complete agents=${agentsUpdated} missionsCreated=${result.missionsCreated} missionsSynced=${result.missionsSynced} missionTasks=${result.tasksCreated} ventureBackfill=${ventureBackfill} scoutOpportunities=${scoutCounts.total}`
+      `${LOG_PREFIX} complete agents=${agentsUpdated} missionsCreated=${result.missionsCreated} missionsSynced=${result.missionsSynced} missionTasks=${result.tasksCreated} ventureBackfill=${ventureBackfill} scoutOpportunities=${scoutCounts.total} performanceAgents=${performanceBackfill.agentsUpserted} performanceScouts=${performanceBackfill.scoutsUpserted}`
     );
   } catch (error) {
     console.error(

@@ -19,6 +19,7 @@ import {
   getRecentMissionEvents,
 } from "../missions/mission-service";
 import { getFinanceSnapshot } from "../finance/queries";
+import { getPerformanceSummary } from "../performance/performance-queries";
 import { getEmpireScoreSnapshot, getAtlasEmpireSummary, getAthenaEmpireSummary, getForgeEmpireSummary, getNovaEmpireSummary, getMercuryEmpireSummary } from "../empire/queries";
 
 export type HqDepartmentSnapshot = {
@@ -206,6 +207,47 @@ export type HqSnapshot = {
     profitableMissions: number;
     fundRecommendations: number;
   };
+  performanceSummary: {
+    topAgent: {
+      agentKey: string;
+      department: string;
+      score: number;
+      level: number;
+      xp: number;
+    } | null;
+    topScout: {
+      scoutKey: string;
+      score: number;
+      level: number;
+      xp: number;
+    } | null;
+    highestLevel: number;
+    highestLevelAgent: {
+      agentKey: string;
+      level: number;
+      xp: number;
+    } | null;
+    highestLevelScout: {
+      scoutKey: string;
+      level: number;
+      xp: number;
+    } | null;
+    topAgents: Array<{
+      agentKey: string;
+      department: string;
+      score: number;
+      level: number;
+      xp: number;
+    }>;
+    topScouts: Array<{
+      scoutKey: string;
+      score: number;
+      level: number;
+      xp: number;
+    }>;
+    totalAgents: number;
+    totalScouts: number;
+  };
 };
 
 function deriveAgentStatus(
@@ -300,6 +342,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     forgeSummary,
     novaSummary,
     mercurySummary,
+    performanceSummary,
   ] = await Promise.all([
     prisma.department.findMany({
       include: {
@@ -343,6 +386,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     getForgeEmpireSummary(),
     getNovaEmpireSummary(),
     getMercuryEmpireSummary(),
+    getPerformanceSummary(),
   ]);
 
   const pending =
@@ -592,6 +636,40 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
       averageRoi: mercurySummary.averageRoi,
       profitableMissions: mercurySummary.profitableMissions,
       fundRecommendations: mercurySummary.fundRecommendations,
+    },
+    performanceSummary: {
+      topAgent: performanceSummary.topAgent,
+      topScout: performanceSummary.topScout,
+      highestLevel: performanceSummary.highestLevel,
+      highestLevelAgent: performanceSummary.highestLevelAgent
+        ? {
+            agentKey: performanceSummary.highestLevelAgent.agentKey,
+            level: performanceSummary.highestLevelAgent.level,
+            xp: performanceSummary.highestLevelAgent.xp,
+          }
+        : null,
+      highestLevelScout: performanceSummary.highestLevelScout
+        ? {
+            scoutKey: performanceSummary.highestLevelScout.scoutKey,
+            level: performanceSummary.highestLevelScout.level,
+            xp: performanceSummary.highestLevelScout.xp,
+          }
+        : null,
+      topAgents: performanceSummary.topAgents.map((agent) => ({
+        agentKey: agent.agentKey,
+        department: agent.department,
+        score: agent.score,
+        level: agent.level,
+        xp: agent.xp,
+      })),
+      topScouts: performanceSummary.topScouts.map((scout) => ({
+        scoutKey: scout.scoutKey,
+        score: scout.score,
+        level: scout.level,
+        xp: scout.xp,
+      })),
+      totalAgents: performanceSummary.totalAgents,
+      totalScouts: performanceSummary.totalScouts,
     },
   };
 }

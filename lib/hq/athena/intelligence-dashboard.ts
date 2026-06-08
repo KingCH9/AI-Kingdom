@@ -14,6 +14,7 @@ import {
   computeScoutXpFromMissions,
   type ScoutXpBreakdown,
 } from "./scout-xp";
+import { persistScoutPerformanceBatch } from "../performance/performance-sync";
 
 export type ScoutIntelligenceRecord = {
   scoutKey: string;
@@ -188,6 +189,8 @@ export async function getAthenaIntelligenceSnapshot(): Promise<AthenaIntelligenc
   const highestRevenueScout =
     [...scouts].sort((a, b) => b.revenueGenerated - a.revenueGenerated)[0] ??
     null;
+
+  await persistScoutPerformanceBatch(scouts);
 
   return {
     generatedAt: new Date().toISOString(),
