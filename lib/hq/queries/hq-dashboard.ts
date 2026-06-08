@@ -19,7 +19,7 @@ import {
   getRecentMissionEvents,
 } from "../missions/mission-service";
 import { getFinanceSnapshot } from "../finance/queries";
-import { getEmpireScoreSnapshot, getAtlasEmpireSummary, getAthenaEmpireSummary } from "../empire/queries";
+import { getEmpireScoreSnapshot, getAtlasEmpireSummary, getAthenaEmpireSummary, getForgeEmpireSummary } from "../empire/queries";
 
 export type HqDepartmentSnapshot = {
   key: DepartmentKey;
@@ -162,6 +162,20 @@ export type HqSnapshot = {
       revenueGenerated: number;
     } | null;
   };
+  forgeSummary: {
+    topAgent: {
+      agentKey: string;
+      name: string;
+      score: number;
+      level: number;
+      xp: number;
+    } | null;
+    totalBuildsCompleted: number;
+    totalMissionsBuilt: number;
+    totalStoresLaunched: number;
+    totalForgeRevenue: number;
+    averageAgentScore: number;
+  };
 };
 
 function deriveAgentStatus(
@@ -253,6 +267,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     empireSnapshot,
     atlasSummary,
     athenaIntelligenceSummary,
+    forgeSummary,
   ] = await Promise.all([
     prisma.department.findMany({
       include: {
@@ -293,6 +308,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     getEmpireScoreSnapshot(),
     getAtlasEmpireSummary(),
     getAthenaEmpireSummary(),
+    getForgeEmpireSummary(),
   ]);
 
   const pending =
@@ -492,6 +508,22 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
               athenaIntelligenceSummary.highestRevenueScout.revenueGenerated,
           }
         : null,
+    },
+    forgeSummary: {
+      topAgent: forgeSummary.topAgent
+        ? {
+            agentKey: forgeSummary.topAgent.agentKey,
+            name: forgeSummary.topAgent.name,
+            score: forgeSummary.topAgent.score,
+            level: forgeSummary.topAgent.level,
+            xp: forgeSummary.topAgent.xp,
+          }
+        : null,
+      totalBuildsCompleted: forgeSummary.totalBuildsCompleted,
+      totalMissionsBuilt: forgeSummary.totalMissionsBuilt,
+      totalStoresLaunched: forgeSummary.totalStoresLaunched,
+      totalForgeRevenue: forgeSummary.totalForgeRevenue,
+      averageAgentScore: forgeSummary.averageAgentScore,
     },
   };
 }

@@ -340,3 +340,9 @@ export async function getAthenaEmpireSummary() {
   const { getAthenaIntelligenceSummary } = await import("../athena/intelligence-dashboard");
   return getAthenaIntelligenceSummary();
 }
+
+/** Forge builder metrics summary for empire/HQ integration. */
+export async function getForgeEmpireSummary() {
+  const { getForgeWorkstationSummary } = await import("../forge/workstation-dashboard");
+  return getForgeWorkstationSummary();
+}

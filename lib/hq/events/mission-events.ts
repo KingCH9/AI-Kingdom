@@ -10,6 +10,7 @@ export const MISSION_EVENT_ACTIONS = {
   SPEND_RECORDED: "spend_recorded",
   AI_COST: "ai_cost",
   ORCHESTRATION_HANDOFF: "orchestration_handoff",
+  BUILD_COMPLETED: "build_completed",
 } as const;
 
 export type MissionEventAction =

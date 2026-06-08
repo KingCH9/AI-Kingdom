@@ -278,6 +278,44 @@ export default async function HqPage() {
       </section>
 
       <section className="mb-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-2xl font-bold">🔨 Forge Builder Engine</h2>
+            <p className="text-sm text-gray-500">
+              {hq.forgeSummary.topAgent
+                ? `Top builder ${hq.forgeSummary.topAgent.name} · score ${hq.forgeSummary.topAgent.score}`
+                : "Build metrics computed from missions, templates, and stores"}
+            </p>
+          </div>
+          <Link href="/hq/forge" className="text-sm text-blue-400 hover:underline">
+            Forge workstation dashboard →
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl">
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Top Builder</p>
+            <p className="text-lg font-bold truncate">
+              {hq.forgeSummary.topAgent?.name ?? "—"}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Builds Completed</p>
+            <p className="text-2xl font-bold">{hq.forgeSummary.totalBuildsCompleted}</p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Stores Launched</p>
+            <p className="text-2xl font-bold">{hq.forgeSummary.totalStoresLaunched}</p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Forge Revenue</p>
+            <p className="text-2xl font-bold text-green-400">
+              {formatGbp(hq.forgeSummary.totalForgeRevenue)}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mb-10">
         <h2 className="text-2xl font-bold mb-4">Ventures by Type</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
           {hq.ventureDistribution.map((vt) => (

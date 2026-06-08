@@ -46,6 +46,10 @@ export default function RootLayout({
                 🔬 Scouts
               </Link>
 
+              <Link href="/hq/forge">
+                🔨 Forge
+              </Link>
+
               <Link href="/hq/finance">
                 💰 Finance
               </Link>

@@ -15,6 +15,7 @@ import {
   coordinateStatusTransition,
   formatHandoffDetail,
 } from "../orchestration";
+import { isForgeBuildTask, recordBuildComplete } from "../forge/build-engine";
 
 const MISSION_INCLUDE = {
   department: true,
@@ -373,6 +374,16 @@ export async function completeMissionTask(
     agentPersona: agentPersona ?? task.ownerPersona,
     estimatedCostGbp: task.estimatedCostGbp,
   });
+
+  if (isForgeBuildTask(task)) {
+    await recordBuildComplete({
+      missionId,
+      taskId,
+      taskTitle: task.title,
+      taskPhase: task.phase,
+      agentPersona: agentPersona ?? task.ownerPersona,
+    });
+  }
 
   const mission = await getMissionById(missionId);
   return { success: true as const, task: updated, mission: mission! };
