@@ -128,12 +128,31 @@ export async function assertProductionDatabaseConnection(): Promise<void> {
   }
 
   const { prisma } = await import("@/lib/prisma");
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Database connection failed";
-    throw new Error(`Production database connection failed: ${message}`);
+  const maxAttempts = 6;
+  const delaysMs = [0, 3000, 5000, 8000, 12000, 15000];
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      return;
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Database connection failed";
+      const transient =
+        message.includes("too many clients") ||
+        message.includes("Too many database connections");
+
+      if (transient && attempt < maxAttempts) {
+        const wait = delaysMs[attempt] ?? 15000;
+        console.warn(
+          `[startup] Database connection limit hit — retry ${attempt}/${maxAttempts} in ${wait / 1000}s`
+        );
+        await new Promise((resolve) => setTimeout(resolve, wait));
+        continue;
+      }
+
+      throw new Error(`Production database connection failed: ${message}`);
+    }
   }
 }
 
