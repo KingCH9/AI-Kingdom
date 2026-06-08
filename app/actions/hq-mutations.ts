@@ -5,6 +5,7 @@ import {
   UnauthorizedMutationError,
 } from "@/lib/auth/server-action-guard";
 import type { MissionStatus } from "@/lib/hq/constants";
+import { recordDepartmentSpend } from "@/lib/hq/finance/spend-service";
 import {
   completeMissionTask,
   createMission,
@@ -97,4 +98,27 @@ export async function completeMissionTaskAction(input: {
 
     return { success: true as const };
   }, "completeMissionTask");
+}
+
+export async function recordSpendAction(input: {
+  departmentId: number;
+  amount: number;
+  reason: string;
+  missionId?: number;
+}) {
+  return runAuthorizedMutation(async () => {
+    const result = await recordDepartmentSpend({
+      ...input,
+      agentPersona: "mercury",
+    });
+
+    if (!result.success) {
+      return { success: false as const, message: result.message };
+    }
+
+    return {
+      success: true as const,
+      budget: result.budget,
+    };
+  }, "recordSpend");
 }

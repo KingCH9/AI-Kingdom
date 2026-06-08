@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getHqSnapshot } from "@/lib/hq/queries/hq-dashboard";
+import { BudgetUsageBar, formatGbp } from "@/components/hq/finance-ui";
 import type { HqAgentStatus } from "@/lib/hq/constants";
 
 export const dynamic = "force-dynamic";
@@ -86,6 +87,96 @@ export default async function HqPage() {
           <p className="text-2xl font-bold">{hq.pipelineHealth.activeTasks}</p>
         </div>
       </div>
+
+      <section className="mb-10 rounded-2xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-950 p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-2xl font-bold">💰 Finance — Mercury</h2>
+            <p className="text-sm text-gray-500">
+              Period {hq.finance.periodMonth} · observation only
+            </p>
+          </div>
+          <Link
+            href="/hq/finance"
+            className="text-sm text-blue-400 hover:underline"
+          >
+            Full finance dashboard →
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <div className="p-3 rounded-lg border border-gray-800 bg-gray-950">
+            <p className="text-xs text-gray-500">Allocated</p>
+            <p className="text-xl font-bold">{formatGbp(hq.finance.totalAllocated)}</p>
+          </div>
+          <div className="p-3 rounded-lg border border-gray-800 bg-gray-950">
+            <p className="text-xs text-gray-500">Spent</p>
+            <p className="text-xl font-bold text-amber-400">
+              {formatGbp(hq.finance.totalSpent)}
+            </p>
+          </div>
+          <div className="p-3 rounded-lg border border-gray-800 bg-gray-950">
+            <p className="text-xs text-gray-500">Remaining</p>
+            <p className="text-xl font-bold text-emerald-400">
+              {formatGbp(hq.finance.totalRemaining)}
+            </p>
+          </div>
+          <div className="p-3 rounded-lg border border-gray-800 bg-gray-950">
+            <p className="text-xs text-gray-500">Mission Costs</p>
+            <p className="text-xl font-bold">{formatGbp(hq.finance.missionCostTotal)}</p>
+          </div>
+        </div>
+
+        <BudgetUsageBar percent={hq.finance.usagePercent} className="mb-6" />
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-400 mb-3">
+              Department Breakdown
+            </h3>
+            <div className="space-y-2">
+              {hq.finance.departmentBudgets.map((dept) => (
+                <div key={dept.departmentKey} className="text-sm">
+                  <div className="flex justify-between mb-1">
+                    <span>{dept.departmentName}</span>
+                    <span className="text-gray-500">
+                      {formatGbp(dept.spent)} / {formatGbp(dept.allocated)}
+                    </span>
+                  </div>
+                  <BudgetUsageBar percent={dept.usagePercent} />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-400 mb-3">
+              Top Costly Missions
+            </h3>
+            {hq.finance.topCostlyMissions.length === 0 ? (
+              <p className="text-gray-600 text-sm">No costs recorded yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {hq.finance.topCostlyMissions.map((m) => (
+                  <li
+                    key={m.missionId}
+                    className="flex justify-between text-sm p-2 rounded bg-gray-950 border border-gray-800"
+                  >
+                    <Link
+                      href={`/hq/missions/${m.missionId}`}
+                      className="truncate hover:text-blue-300 pr-2"
+                    >
+                      {m.title}
+                    </Link>
+                    <span className="shrink-0 font-bold">
+                      {formatGbp(m.costGbp, 2)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </section>
 
       <section className="mb-10">
         <h2 className="text-2xl font-bold mb-4">Departments</h2>

@@ -34,6 +34,10 @@ export default function RootLayout({
                 🎯 Missions
               </Link>
 
+              <Link href="/hq/finance">
+                💰 Finance
+              </Link>
+
               <Link href="/validator">
                 🔬 Validator Queue
               </Link>

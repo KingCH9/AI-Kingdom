@@ -8,7 +8,7 @@ import {
   type MissionStatus,
 } from "../constants";
 import {
-  createMissionEvent,
+  createMissionEventWithCost,
   MISSION_EVENT_ACTIONS,
 } from "../events/mission-events";
 import {
@@ -33,6 +33,7 @@ export type CreateMissionInput = {
   revenueStream?: string;
   opportunityId?: number | null;
   agentPersona?: string | null;
+  estimatedCostGbp?: number;
 };
 
 export type UpdateMissionInput = {
@@ -40,6 +41,7 @@ export type UpdateMissionInput = {
   humanOverride?: boolean;
   overrideReason?: string | null;
   agentPersona?: string | null;
+  estimatedCostGbp?: number;
 };
 
 function isValidMissionStatus(status: string): status is MissionStatus {
@@ -200,11 +202,12 @@ export async function createMission(input: CreateMissionInput) {
 
   await seedDefaultMissionTasks(mission.id, input.opportunityId);
 
-  await createMissionEvent({
+  await createMissionEventWithCost({
     missionId: mission.id,
     action: MISSION_EVENT_ACTIONS.MISSION_CREATED,
     detail: `Mission "${mission.title}" created`,
     agentPersona: input.agentPersona ?? input.ownerPersona,
+    estimatedCostGbp: input.estimatedCostGbp,
   });
 
   const refreshed = await getMissionById(mission.id);
@@ -269,11 +272,12 @@ export async function updateMission(id: number, input: UpdateMissionInput) {
   });
 
   if (changes.length > 0) {
-    await createMissionEvent({
+    await createMissionEventWithCost({
       missionId: mission.id,
       action: MISSION_EVENT_ACTIONS.MISSION_UPDATED,
       detail: changes.join("; "),
       agentPersona: input.agentPersona ?? "operator",
+      estimatedCostGbp: input.estimatedCostGbp,
     });
   }
 
@@ -287,11 +291,12 @@ export async function updateMission(id: number, input: UpdateMissionInput) {
     (overrideToggled && mission.humanOverride) ||
     (mission.humanOverride && reasonChanged && mission.overrideReason?.trim())
   ) {
-    await createMissionEvent({
+    await createMissionEventWithCost({
       missionId: mission.id,
       action: MISSION_EVENT_ACTIONS.HUMAN_OVERRIDE,
       detail: mission.overrideReason?.trim() || "Human override enabled",
       agentPersona: input.agentPersona ?? "operator",
+      estimatedCostGbp: input.estimatedCostGbp,
     });
   }
 
@@ -330,7 +335,7 @@ export async function completeMissionTask(
     detail += `. Legacy Task #${task.legacyTaskId} completed`;
   }
 
-  await createMissionEvent({
+  await createMissionEventWithCost({
     missionId,
     action: MISSION_EVENT_ACTIONS.TASK_COMPLETED,
     detail,

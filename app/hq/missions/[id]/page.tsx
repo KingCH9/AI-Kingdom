@@ -7,7 +7,9 @@ import {
   MissionStatusBadge,
   missionEventActionLabel,
 } from "@/components/hq/mission-ui";
+import { formatGbp } from "@/components/hq/finance-ui";
 import { getMissionById } from "@/lib/hq/missions/mission-service";
+import { getMissionCostById } from "@/lib/hq/finance/cost-aggregation";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +37,8 @@ export default async function MissionDetailPage({
   if (!mission) {
     notFound();
   }
+
+  const missionCostGbp = await getMissionCostById(missionId);
 
   const completedTasks = mission.missionTasks.filter(
     (t) => t.status === "completed"
@@ -109,7 +113,11 @@ export default async function MissionDetailPage({
               </div>
               <div>
                 <dt className="text-gray-500">Est. cost</dt>
-                <dd>{formatMoney(mission.estimatedCostGbp)}</dd>
+                <dd>{formatGbp(mission.estimatedCostGbp, 2)}</dd>
+              </div>
+              <div>
+                <dt className="text-gray-500">Actual cost (events)</dt>
+                <dd>{formatGbp(missionCostGbp, 2)}</dd>
               </div>
             </dl>
             <div className="mt-6 pt-4 border-t border-gray-800">

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { syncMissionActualCost } from "../finance/cost-aggregation";
 
 export const MISSION_EVENT_ACTIONS = {
   MISSION_CREATED: "mission_created",
@@ -6,6 +7,8 @@ export const MISSION_EVENT_ACTIONS = {
   TASK_COMPLETED: "task_completed",
   RULE_VIOLATION: "rule_violation",
   HUMAN_OVERRIDE: "human_override",
+  SPEND_RECORDED: "spend_recorded",
+  AI_COST: "ai_cost",
 } as const;
 
 export type MissionEventAction =
@@ -17,6 +20,8 @@ export type CreateMissionEventInput = {
   detail?: string | null;
   agentPersona?: string | null;
   estimatedCostGbp?: number;
+  /** When true (default), roll up event costs onto mission.actualCostGbp. */
+  syncMissionCost?: boolean;
 };
 
 /** Adapter layer — logs HQ activity without touching AgentLog. */
@@ -32,11 +37,31 @@ export async function createMissionEvent(input: CreateMissionEventInput) {
   });
 }
 
+/**
+ * Cost-aware event adapter — records MissionEvent and optionally syncs
+ * mission.actualCostGbp from event totals. Separate from AgentLog.
+ */
+export async function createMissionEventWithCost(input: CreateMissionEventInput) {
+  const event = await createMissionEvent(input);
+
+  const shouldSync = input.syncMissionCost !== false;
+  if (shouldSync && (input.estimatedCostGbp ?? 0) > 0) {
+    await syncMissionActualCost(input.missionId);
+  }
+
+  return event;
+}
+
 export async function getLatestMissionEvents(
   missionIds: number[],
   takePerMission = 3
 ) {
-  if (missionIds.length === 0) return new Map<number, Awaited<ReturnType<typeof prisma.missionEvent.findMany>>>();
+  if (missionIds.length === 0) {
+    return new Map<
+      number,
+      Awaited<ReturnType<typeof prisma.missionEvent.findMany>>
+    >();
+  }
 
   const events = await prisma.missionEvent.findMany({
     where: { missionId: { in: missionIds } },

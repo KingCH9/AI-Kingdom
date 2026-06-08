@@ -18,6 +18,7 @@ import {
   getMissionStatusCounts,
   getRecentMissionEvents,
 } from "../missions/mission-service";
+import { getFinanceSnapshot } from "../finance/queries";
 
 export type HqDepartmentSnapshot = {
   key: DepartmentKey;
@@ -97,6 +98,28 @@ export type HqSnapshot = {
     departmentKey: string;
     count: number;
   }>;
+  finance: {
+    periodMonth: string;
+    totalAllocated: number;
+    totalSpent: number;
+    totalRemaining: number;
+    usagePercent: number;
+    missionCostTotal: number;
+    departmentBudgets: Array<{
+      departmentKey: string;
+      departmentName: string;
+      allocated: number;
+      spent: number;
+      remaining: number;
+      usagePercent: number;
+      missionCostGbp: number;
+    }>;
+    topCostlyMissions: Array<{
+      missionId: number;
+      title: string;
+      costGbp: number;
+    }>;
+  };
 };
 
 function deriveAgentStatus(
@@ -184,6 +207,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     departmentMissionCounts,
     recentEvents,
     totalMissionCount,
+    financeSnapshot,
   ] = await Promise.all([
     prisma.department.findMany({
       include: {
@@ -220,6 +244,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     getDepartmentMissionCounts(),
     getRecentMissionEvents(8),
     prisma.mission.count(),
+    getFinanceSnapshot(),
   ]);
 
   const pending =
@@ -361,5 +386,27 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
       departmentKey: row.departmentKey,
       count: row.count,
     })),
+    finance: {
+      periodMonth: financeSnapshot.periodMonth,
+      totalAllocated: financeSnapshot.totals.allocatedGbp,
+      totalSpent: financeSnapshot.totals.spentGbp,
+      totalRemaining: financeSnapshot.totals.remainingGbp,
+      usagePercent: financeSnapshot.totals.usagePercent,
+      missionCostTotal: financeSnapshot.totals.missionCostGbp,
+      departmentBudgets: financeSnapshot.budgets.map((b) => ({
+        departmentKey: b.departmentKey,
+        departmentName: b.departmentName,
+        allocated: b.allocatedGbp,
+        spent: b.spentGbp,
+        remaining: b.remainingGbp,
+        usagePercent: b.usagePercent,
+        missionCostGbp: b.missionCostGbp,
+      })),
+      topCostlyMissions: financeSnapshot.topCostlyMissions.slice(0, 5).map((m) => ({
+        missionId: m.missionId,
+        title: m.missionTitle,
+        costGbp: m.totalCostGbp,
+      })),
+    },
   };
 }
