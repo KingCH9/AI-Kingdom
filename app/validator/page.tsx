@@ -8,6 +8,8 @@ import { AGENT_NAMES } from "@/lib/types";
 import { normalizeOpportunityStatus } from "@/lib/opportunity";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function ValidatorQueuePage() {
   const opportunities = await prisma.opportunity.findMany({
     orderBy: { createdAt: "asc" },

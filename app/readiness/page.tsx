@@ -4,6 +4,8 @@ import { runHealthChecks, type DiagnosticCheck } from "@/lib/ops/diagnostics";
 import { isProduction } from "@/lib/env";
 import { isStripeConfigured, isStripeTestMode } from "@/lib/stripe/client";
 
+export const dynamic = "force-dynamic";
+
 function CheckRow({ item }: { item: DiagnosticCheck }) {
   const statusLabel =
     item.status === "pass" ? "pass" : item.status === "warn" ? "warn" : "fail";

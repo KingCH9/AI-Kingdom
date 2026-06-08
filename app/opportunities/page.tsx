@@ -4,6 +4,8 @@ import { GenerateOpportunityButton } from "@/components/opportunity-workflow-act
 import { computeOpportunityStats } from "@/lib/opportunity";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function OpportunitiesPage() {
   const opportunities = await prisma.opportunity.findMany({
     orderBy: {

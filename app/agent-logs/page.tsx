@@ -1,6 +1,8 @@
 import { AgentLogList } from "@/components/opportunity-ui";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function AgentLogsPage() {
   const logs = await prisma.agentLog.findMany({
     orderBy: {

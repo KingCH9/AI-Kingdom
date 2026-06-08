@@ -9,6 +9,8 @@ import { isTaskWorkerEnabled } from "@/lib/env";
 import { TASK_STATUSES } from "@/lib/tasks/constants";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 function TaskColumn({
   title,
   tasks,

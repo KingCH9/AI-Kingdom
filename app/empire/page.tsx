@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function EmpirePage() {
   const agents = await prisma.agent.findMany();
   const stores = await prisma.store.findMany();

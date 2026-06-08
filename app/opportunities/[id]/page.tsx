@@ -12,6 +12,8 @@ import { findAgentLogsForOpportunity } from "@/lib/agents";
 import { toOpportunityViewModel } from "@/lib/opportunity";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function OpportunityDetailsPage({
   params,
 }: {

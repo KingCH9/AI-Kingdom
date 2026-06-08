@@ -5,6 +5,8 @@ import { AGENT_NAMES } from "@/lib/types";
 import { getCeoApprovalQueue } from "@/lib/queries/ceo";
 import { scoreOpportunityWithIntelligence } from "@/lib/intelligence/priority-bias";
 
+export const dynamic = "force-dynamic";
+
 export default async function CeoApprovalPage() {
   const { queue, intelligence } = await getCeoApprovalQueue();
 

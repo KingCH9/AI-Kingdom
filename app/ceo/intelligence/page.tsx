@@ -4,6 +4,8 @@ import { StatCard } from "@/components/opportunity-ui";
 import { AGENT_NAMES } from "@/lib/types";
 import { getEmpireIntelligence } from "@/lib/queries/intelligence";
 
+export const dynamic = "force-dynamic";
+
 export default async function CeoIntelligencePage() {
   const intelligence = await getEmpireIntelligence();
   const { analysis } = intelligence;

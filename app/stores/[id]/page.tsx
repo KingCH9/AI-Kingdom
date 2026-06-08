@@ -17,6 +17,8 @@ import {
 } from "@/lib/queries/stores";
 import { TASK_STATUSES } from "@/lib/tasks/constants";
 
+export const dynamic = "force-dynamic";
+
 const TASK_STATUS_LABELS: Record<string, string> = {
   [TASK_STATUSES.PENDING]: "Pending",
   [TASK_STATUSES.IN_PROGRESS]: "In Progress",

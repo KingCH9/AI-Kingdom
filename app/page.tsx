@@ -6,6 +6,8 @@ import { EmpireIntelligenceInsights } from "@/components/empire-intelligence-ins
 import { StatCard } from "@/components/opportunity-ui";
 import { getEmpireDashboard } from "@/lib/queries/analytics";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const dashboard = await getEmpireDashboard();
 

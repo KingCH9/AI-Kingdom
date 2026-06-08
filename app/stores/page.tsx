@@ -3,6 +3,8 @@ import { StatCard } from "@/components/opportunity-ui";
 import { StoreStatusBadge } from "@/components/store-ui";
 import { getStoreDashboardStats, getStores } from "@/lib/queries/stores";
 
+export const dynamic = "force-dynamic";
+
 export default async function StoresPage() {
   const [stores, stats] = await Promise.all([
     getStores(),

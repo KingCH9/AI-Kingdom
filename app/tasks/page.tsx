@@ -2,6 +2,8 @@ import Link from "next/link";
 import { TASK_STATUSES } from "@/lib/tasks/constants";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 const STATUS_COLORS: Record<string, string> = {
   pending: "text-yellow-400",
   in_progress: "text-blue-400",
