@@ -54,11 +54,17 @@ export interface ClaudeOpportunityResponse {
   nicheDifferentiation?: string;
   demandRationale?: string;
   competitionRationale?: string;
-  /** Phase D2 — structured demand signal (0–100). Not copied into demandScore directly. */
+  /** Phase D2 — overall market momentum (0–100). */
   trendStrength?: number;
+  /** Phase D2 — search/social demand trajectory (0–100). */
+  searchGrowth?: number;
+  /** Phase D2 — supplier availability / ease (0–100). */
+  sourcingEase?: number;
+  /** Phase D2 — composite of ancillary demand signals (0–100). */
+  demandSignalsComposite?: number;
   /** Phase D2 — Claude competition estimate (0–100, higher = more competitive). */
   competitionEstimate?: number;
-  /** Phase D2 — structured demand decomposition. */
+  /** @deprecated Legacy nested signals — top-level fields preferred. */
   demandSignals?: {
     searchGrowth?: number;
     sourcingEase?: number;

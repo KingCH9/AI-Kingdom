@@ -64,7 +64,7 @@ export type {
   EmpirePipelineCycleResult,
   EmpirePipelineCycleOptions,
 } from "./pipeline-cycle";
-export { deriveScoresFromClaudeResponse, deriveScoresLegacy, deriveDemandScoreFromSignals, otherFactorsComposite } from "./derive-scores";
+export { deriveScoresFromClaudeResponse, deriveScoresLegacy, deriveDemandScoreFromSignals, resolveDemandSignalsComposite } from "./derive-scores";
 export {
   OPPORTUNITY_SCORE_WEIGHTS,
   OPPORTUNITY_THRESHOLDS,

@@ -78,14 +78,20 @@ Avoid similar product concepts (same mechanism, same use case, same buyer, cosme
 
 ## STRUCTURED SCORING SIGNALS (Phase D2 — required)
 
-Provide honest numeric estimates (integers 0–100). These drive deterministic scoring — do NOT copy the same number into every field.
+Provide honest numeric estimates (integers 0–100). These drive deterministic scoring — do NOT copy the same number into every field and do NOT set opportunityScore equal to trendStrength.
 
+Calibration anchors (use the full range):
+- Strong launch candidate: trendStrength 84–95, searchGrowth 80–93, sourcingEase 72–90, competitionEstimate 15–32, demandSignalsComposite 75–90
+- Validated hold (CEO queue): trendStrength 68–82, searchGrowth 62–78, sourcingEase 58–75, competitionEstimate 28–45
+- Below validated threshold: trendStrength below 62 or competitionEstimate above 55
+
+Fields:
 - trendStrength — overall market momentum for this niche right now
+- searchGrowth — search/social demand trajectory
+- sourcingEase — ease of finding reliable suppliers
+- demandSignalsComposite — blended ancillary demand (ad potential, margin stability, repeat purchase, etc.)
 - competitionEstimate — how crowded the niche is (higher = more competitive)
-- demandSignals.searchGrowth — search/social demand trajectory
-- demandSignals.sourcingEase — ease of finding reliable suppliers
-- demandSignals.otherFactors — optional object of numeric sub-scores, e.g. { "adPotential": 75, "marginStability": 80 }
-- opportunityScore — your holistic self-assessment (logged for cross-check only; not used as demandScore)
+- opportunityScore — your holistic self-assessment (logged for cross-check only; NOT used as demandScore)
 
 ## REQUIRED RATIONALE FIELDS
 
@@ -127,12 +133,10 @@ Return ONLY valid JSON in this exact format:
   "demandRationale": "",
   "competitionRationale": "",
   "trendStrength": 0,
+  "searchGrowth": 0,
+  "sourcingEase": 0,
+  "demandSignalsComposite": 0,
   "competitionEstimate": 0,
-  "demandSignals": {
-    "searchGrowth": 0,
-    "sourcingEase": 0,
-    "otherFactors": {}
-  },
   "riskRating": 0,
   "opportunityScore": 0
 }

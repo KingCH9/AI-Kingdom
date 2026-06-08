@@ -1,4 +1,8 @@
 import type { ClaudeOpportunityResponse, OpportunityScoreInput } from "@/lib/types";
+import {
+  COMPETITION_BLEND,
+  DEMAND_SIGNAL_WEIGHTS,
+} from "./thresholds";
 import { parseProfitMargin } from "./parse-margin";
 
 function clamp(value: number, min: number, max: number): number {
@@ -39,12 +43,40 @@ function deriveDemandScoreFallback(
   return clamp(Math.floor(raw), 0, 100);
 }
 
-/** Average numeric entries in otherFactors; defaults to 50 when empty. */
-export function otherFactorsComposite(
-  otherFactors: Record<string, number> | undefined
+/** Resolves searchGrowth from top-level or legacy nested demandSignals. */
+function resolveSearchGrowth(
+  data: ClaudeOpportunityResponse,
+  fallback: number
 ): number {
+  if (data.searchGrowth !== undefined) {
+    return parseScore0to100(data.searchGrowth, fallback);
+  }
+  return parseScore0to100(data.demandSignals?.searchGrowth, fallback);
+}
+
+/** Resolves sourcingEase from top-level or legacy nested demandSignals. */
+function resolveSourcingEase(
+  data: ClaudeOpportunityResponse,
+  fallback: number
+): number {
+  if (data.sourcingEase !== undefined) {
+    return parseScore0to100(data.sourcingEase, fallback);
+  }
+  return parseScore0to100(data.demandSignals?.sourcingEase, fallback);
+}
+
+/** Resolves demandSignalsComposite from top-level or legacy otherFactors average. */
+export function resolveDemandSignalsComposite(
+  data: ClaudeOpportunityResponse,
+  fallback: number
+): number {
+  if (data.demandSignalsComposite !== undefined) {
+    return parseScore0to100(data.demandSignalsComposite, fallback);
+  }
+
+  const otherFactors = data.demandSignals?.otherFactors;
   if (!otherFactors) {
-    return 50;
+    return fallback;
   }
 
   const values = Object.values(otherFactors).filter(
@@ -52,7 +84,7 @@ export function otherFactorsComposite(
   );
 
   if (values.length === 0) {
-    return 50;
+    return fallback;
   }
 
   const average = values.reduce((sum, value) => sum + value, 0) / values.length;
@@ -61,7 +93,13 @@ export function otherFactorsComposite(
 
 /**
  * Phase D2 demand score from structured Claude signals.
- * demandScore = 0.4×trendStrength + 0.3×searchGrowth + 0.2×sourcingEase + 0.1×otherFactorsComposite
+ * demandScore =
+ *   0.40 × trendStrength +
+ *   0.30 × searchGrowth +
+ *   0.20 × sourcingEase +
+ *   0.10 × demandSignalsComposite
+ *
+ * Claude opportunityScore is never used here.
  */
 export function deriveDemandScoreFromSignals(
   data: ClaudeOpportunityResponse,
@@ -70,27 +108,22 @@ export function deriveDemandScoreFromSignals(
 ): number {
   const fallback = deriveDemandScoreFallback(profitMargin, riskRating);
   const trendStrength = parseScore0to100(data.trendStrength, fallback);
-  const searchGrowth = parseScore0to100(
-    data.demandSignals?.searchGrowth,
-    fallback
-  );
-  const sourcingEase = parseScore0to100(
-    data.demandSignals?.sourcingEase,
-    fallback
-  );
-  const otherComposite = otherFactorsComposite(data.demandSignals?.otherFactors);
+  const searchGrowth = resolveSearchGrowth(data, fallback);
+  const sourcingEase = resolveSourcingEase(data, fallback);
+  const demandSignalsComposite = resolveDemandSignalsComposite(data, fallback);
 
   const raw =
-    trendStrength * 0.4 +
-    searchGrowth * 0.3 +
-    sourcingEase * 0.2 +
-    otherComposite * 0.1;
+    trendStrength * DEMAND_SIGNAL_WEIGHTS.TREND_STRENGTH +
+    searchGrowth * DEMAND_SIGNAL_WEIGHTS.SEARCH_GROWTH +
+    sourcingEase * DEMAND_SIGNAL_WEIGHTS.SOURCING_EASE +
+    demandSignalsComposite * DEMAND_SIGNAL_WEIGHTS.DEMAND_SIGNALS_COMPOSITE;
 
   return clamp(Math.floor(raw), 0, 100);
 }
 
 /**
  * Competition: blend Claude estimate with deterministic derived value.
+ * competitionScore = 0.5 × derivedCompetition + 0.5 × competitionEstimate
  */
 function deriveCompetition(
   data: ClaudeOpportunityResponse,
@@ -107,7 +140,14 @@ function deriveCompetition(
   );
 
   const claudeEstimate = parseScore0to100(data.competitionEstimate, derived);
-  return clamp(Math.floor(claudeEstimate * 0.5 + derived * 0.5), 0, 100);
+  return clamp(
+    Math.floor(
+      claudeEstimate * COMPETITION_BLEND.CLAUDE +
+        derived * COMPETITION_BLEND.DERIVED
+    ),
+    0,
+    100
+  );
 }
 
 export type DerivedScoreMetadata = {
@@ -117,12 +157,6 @@ export type DerivedScoreMetadata = {
 
 /**
  * Derives deterministic opportunity metrics from Claude output (Phase D2).
- *
- * Strategy:
- * 1. profitMargin — parsed from Claude string
- * 2. riskRating — Claude value when valid, else margin-based fallback
- * 3. demandScore — weighted structured signals (NOT Claude opportunityScore)
- * 4. competition — 50% Claude competitionEstimate + 50% derived inverse
  */
 export function deriveScoresFromClaudeResponse(
   data: ClaudeOpportunityResponse
