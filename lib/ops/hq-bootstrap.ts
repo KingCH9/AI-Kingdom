@@ -12,6 +12,10 @@ import {
   ownerPersonaForMissionStatus,
 } from "@/lib/hq/missions/project-from-empire";
 import { seedHqFoundation } from "@/lib/hq/seed/foundation";
+import {
+  backfillMissionVentureTypes,
+  seedVentureEngine,
+} from "@/lib/hq/seed/venture-engine";
 
 const LOG_PREFIX = "[hq-bootstrap]";
 
@@ -175,11 +179,14 @@ export async function backfillMissionsFromEmpire(): Promise<{
 /** Idempotent HQ Phase 1a bootstrap — foundation + empire mission backfill. */
 export async function ensureHqFoundation(): Promise<void> {
   try {
+    await seedHqFoundation();
+    await seedVentureEngine();
     const agentsUpdated = await attachAgentHqMetadata();
     const result = await backfillMissionsFromEmpire();
+    const ventureBackfill = await backfillMissionVentureTypes();
 
     console.log(
-      `${LOG_PREFIX} complete agents=${agentsUpdated} missionsCreated=${result.missionsCreated} missionsSynced=${result.missionsSynced} missionTasks=${result.tasksCreated}`
+      `${LOG_PREFIX} complete agents=${agentsUpdated} missionsCreated=${result.missionsCreated} missionsSynced=${result.missionsSynced} missionTasks=${result.tasksCreated} ventureBackfill=${ventureBackfill}`
     );
   } catch (error) {
     console.error(

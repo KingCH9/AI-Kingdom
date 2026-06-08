@@ -38,6 +38,10 @@ export default function RootLayout({
                 💰 Finance
               </Link>
 
+              <Link href="/hq/empire">
+                👑 Empire
+              </Link>
+
               <Link href="/validator">
                 🔬 Validator Queue
               </Link>

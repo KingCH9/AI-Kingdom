@@ -21,6 +21,8 @@ const MISSION_INCLUDE = {
   department: true,
   opportunity: true,
   store: true,
+  ventureType: true,
+  ventureTemplate: true,
   missionTasks: { orderBy: { sortOrder: "asc" as const } },
   events: { orderBy: { createdAt: "desc" as const } },
 };
@@ -135,6 +137,8 @@ export async function listMissions(filters?: {
       department: true,
       opportunity: true,
       store: true,
+      ventureType: true,
+      ventureTemplate: true,
       missionTasks: { orderBy: { sortOrder: "asc" } },
       events: { orderBy: { createdAt: "desc" }, take: 5 },
     },

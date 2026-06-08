@@ -67,6 +67,43 @@ export const REVENUE_STREAMS_TIER1 = [
   "content",
 ] as const;
 
+/** Phase 2A venture type keys */
+export const VENTURE_TYPE_KEYS = {
+  SHOPIFY: "shopify",
+  ETSY: "etsy",
+  AFFILIATE: "affiliate",
+  CONTENT: "content",
+  SAAS: "saas",
+  AMAZON: "amazon",
+  AGENCY: "agency",
+  LICENSING: "licensing",
+  ACQUISITIONS: "acquisitions",
+} as const;
+
+export type VentureTypeKey =
+  (typeof VENTURE_TYPE_KEYS)[keyof typeof VENTURE_TYPE_KEYS];
+
+export const VENTURE_TEMPLATE_KEYS = {
+  SHOPIFY_STORE: "SHOPIFY_STORE",
+  ETSY_PRINTABLE: "ETSY_PRINTABLE",
+  AFFILIATE_SITE: "AFFILIATE_SITE",
+  CONTENT_SITE: "CONTENT_SITE",
+  SAAS_MVP: "SAAS_MVP",
+  AMAZON_FBA: "AMAZON_FBA",
+} as const;
+
+export type VentureTemplateKey =
+  (typeof VENTURE_TEMPLATE_KEYS)[keyof typeof VENTURE_TEMPLATE_KEYS];
+
+export const SCOUT_STATUSES = {
+  IDLE: "idle",
+  RESEARCHING: "researching",
+  ACTIVE: "active",
+} as const;
+
+export type ScoutStatus =
+  (typeof SCOUT_STATUSES)[keyof typeof SCOUT_STATUSES];
+
 export const DEFAULT_DEPARTMENT_BUDGETS_GBP: Record<DepartmentKey, number> = {
   [DEPARTMENT_KEYS.CEO_OFFICE]: 10,
   [DEPARTMENT_KEYS.RESEARCH_LAB]: 35,

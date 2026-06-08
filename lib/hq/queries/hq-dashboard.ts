@@ -19,6 +19,7 @@ import {
   getRecentMissionEvents,
 } from "../missions/mission-service";
 import { getFinanceSnapshot } from "../finance/queries";
+import { getEmpireScoreSnapshot } from "../empire/queries";
 
 export type HqDepartmentSnapshot = {
   key: DepartmentKey;
@@ -120,6 +121,24 @@ export type HqSnapshot = {
       costGbp: number;
     }>;
   };
+  ventureDistribution: Array<{
+    ventureTypeKey: string;
+    ventureTypeName: string;
+    count: number;
+  }>;
+  athenaScouts: Array<{
+    key: string;
+    displayName: string;
+    ventureTypeKey: string;
+    status: string;
+    missions: number;
+    opportunitiesDiscovered: number;
+  }>;
+  empireScoreSummary: {
+    score: number;
+    activeVentures: number;
+    launchReadyCount: number;
+  };
 };
 
 function deriveAgentStatus(
@@ -208,6 +227,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     recentEvents,
     totalMissionCount,
     financeSnapshot,
+    empireSnapshot,
   ] = await Promise.all([
     prisma.department.findMany({
       include: {
@@ -245,6 +265,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     getRecentMissionEvents(8),
     prisma.mission.count(),
     getFinanceSnapshot(),
+    getEmpireScoreSnapshot(),
   ]);
 
   const pending =
@@ -407,6 +428,20 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
         title: m.missionTitle,
         costGbp: m.totalCostGbp,
       })),
+    },
+    ventureDistribution: empireSnapshot.venturesByType,
+    athenaScouts: empireSnapshot.scouts.map((s) => ({
+      key: s.key,
+      displayName: s.displayName,
+      ventureTypeKey: s.ventureTypeKey,
+      status: s.status,
+      missions: s.missions,
+      opportunitiesDiscovered: s.opportunitiesDiscovered,
+    })),
+    empireScoreSummary: {
+      score: empireSnapshot.empireScore,
+      activeVentures: empireSnapshot.metrics.activeVentures,
+      launchReadyCount: empireSnapshot.metrics.launchReadyCount,
     },
   };
 }

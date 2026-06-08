@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { CreateMissionForm } from "@/components/hq/create-mission-form";
+import { CreateMissionFromTemplateForm } from "@/components/hq/create-mission-from-template-form";
 import { MissionStatusBadge } from "@/components/hq/mission-ui";
 import { MISSION_STATUSES } from "@/lib/hq/constants";
+import { listVentureTemplates } from "@/lib/hq/missions/create-from-template";
 import { listMissions } from "@/lib/hq/missions/mission-service";
 import { prisma } from "@/lib/prisma";
 
@@ -18,9 +20,10 @@ export default async function MissionBoardPage({
   const status = params.status?.trim() || undefined;
   const department = params.department?.trim() || undefined;
 
-  const [missions, departments] = await Promise.all([
+  const [missions, departments, templates] = await Promise.all([
     listMissions({ status, department }),
     prisma.department.findMany({ orderBy: { id: "asc" } }),
+    listVentureTemplates(),
   ]);
 
   function filterHref(next: { status?: string; department?: string }) {
@@ -49,7 +52,17 @@ export default async function MissionBoardPage({
             constitution warnings (soft mode).
           </p>
         </div>
-        <CreateMissionForm departments={departments} />
+        <div className="flex flex-wrap gap-2">
+          <CreateMissionForm departments={departments} />
+          <CreateMissionFromTemplateForm
+            templates={templates.map((t) => ({
+              id: t.id,
+              key: t.key,
+              name: t.name,
+              ventureTypeName: t.ventureType.name,
+            }))}
+          />
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">

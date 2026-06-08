@@ -55,6 +55,8 @@ model Mission {
   departmentId     Int
   opportunityId    Int?      @unique
   storeId          Int?
+  ventureTypeId    Int?
+  ventureTemplateId Int?
   revenueStream    String    @default("shopify")
   revenueTier      Int       @default(1)
   targetRoi        Float?
@@ -67,16 +69,20 @@ model Mission {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  department  Department    @relation(fields: [departmentId], references: [id])
-  opportunity Opportunity?  @relation(fields: [opportunityId], references: [id])
-  store       Store?        @relation(fields: [storeId], references: [id])
-  missionTasks MissionTask[]
-  events      MissionEvent[]
+  department      Department       @relation(fields: [departmentId], references: [id])
+  opportunity     Opportunity?     @relation(fields: [opportunityId], references: [id])
+  store           Store?           @relation(fields: [storeId], references: [id])
+  ventureType     VentureType?     @relation(fields: [ventureTypeId], references: [id])
+  ventureTemplate VentureTemplate? @relation(fields: [ventureTemplateId], references: [id])
+  missionTasks    MissionTask[]
+  events          MissionEvent[]
 
   @@index([status])
   @@index([departmentId])
   @@index([ownerPersona])
   @@index([storeId])
+  @@index([ventureTypeId])
+  @@index([ventureTemplateId])
 }
 
 model MissionTask {
@@ -141,6 +147,33 @@ model ConstitutionRule {
   priority    Int      @default(0)
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
+}
+
+model VentureType {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  name        String
+  description String   @default("")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  templates VentureTemplate[]
+  missions  Mission[]
+}
+
+model VentureTemplate {
+  id            Int      @id @default(autoincrement())
+  key           String   @unique
+  name          String
+  ventureTypeId Int
+  description   String   @default("")
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  ventureType VentureType @relation(fields: [ventureTypeId], references: [id])
+  missions    Mission[]
+
+  @@index([ventureTypeId])
 }
 
 model Store {

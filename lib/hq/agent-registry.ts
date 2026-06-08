@@ -40,14 +40,12 @@ export const HQ_PERSONA_REGISTRY: Record<HqPersona, HqPersonaDefinition> = {
       AGENT_ROLES.PRODUCT_RESEARCHER,
     ],
     subAgents: [
-      "Market Scout",
-      "Product Scout",
-      "Data Analyst",
-      "Etsy Scout",
-      "Amazon Scout",
       "Shopify Scout",
-      "SaaS Scout",
+      "Etsy Scout",
       "Affiliate Scout",
+      "Content Scout",
+      "SaaS Scout",
+      "Amazon Scout",
     ],
     successMetrics: [
       "Opportunities found",

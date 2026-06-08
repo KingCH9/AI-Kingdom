@@ -98,6 +98,16 @@ export default async function MissionDetailPage({
                 <dd className="capitalize">{mission.revenueStream}</dd>
               </div>
               <div>
+                <dt className="text-gray-500">Venture type</dt>
+                <dd className="capitalize">
+                  {mission.ventureType?.name ?? mission.revenueStream}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-gray-500">Template</dt>
+                <dd>{mission.ventureTemplate?.name ?? "—"}</dd>
+              </div>
+              <div>
                 <dt className="text-gray-500">Target ROI</dt>
                 <dd>
                   {mission.targetRoi != null ? `${mission.targetRoi}%` : "—"}

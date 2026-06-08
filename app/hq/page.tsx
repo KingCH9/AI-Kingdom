@@ -179,6 +179,63 @@ export default async function HqPage() {
       </section>
 
       <section className="mb-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-2xl font-bold">👑 Empire Score</h2>
+            <p className="text-sm text-gray-500">
+              Score {hq.empireScoreSummary.score} · {hq.empireScoreSummary.activeVentures}{" "}
+              active ventures · {hq.empireScoreSummary.launchReadyCount} launch ready
+            </p>
+          </div>
+          <Link href="/hq/empire" className="text-sm text-blue-400 hover:underline">
+            Full empire dashboard →
+          </Link>
+        </div>
+        <div className="p-6 rounded-2xl border border-amber-500/20 bg-gray-900 text-center max-w-xs">
+          <p className="text-5xl font-bold text-amber-300">{hq.empireScoreSummary.score}</p>
+          <p className="text-xs text-gray-500 mt-1">Empire Score</p>
+        </div>
+      </section>
+
+      <section className="mb-10">
+        <h2 className="text-2xl font-bold mb-4">Ventures by Type</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+          {hq.ventureDistribution.map((vt) => (
+            <div
+              key={vt.ventureTypeKey}
+              className="p-4 rounded-xl border border-gray-700 bg-gray-900 text-center"
+            >
+              <p className="text-xs text-gray-500 truncate">{vt.ventureTypeName}</p>
+              <p className="text-2xl font-bold">{vt.count}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mb-10">
+        <h2 className="text-2xl font-bold mb-4">Athena Scouts</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {hq.athenaScouts.map((scout) => (
+            <article
+              key={scout.key}
+              className="p-4 rounded-xl border border-gray-700 bg-gray-900"
+            >
+              <div className="flex justify-between items-start mb-2">
+                <p className="font-semibold text-sm">{scout.displayName}</p>
+                <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-gray-800 text-gray-400 capitalize">
+                  {scout.status}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 capitalize">{scout.ventureTypeKey}</p>
+              <p className="text-sm mt-2">
+                {scout.missions} missions · {scout.opportunitiesDiscovered} opportunities
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="mb-10">
         <h2 className="text-2xl font-bold mb-4">Departments</h2>
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
           {hq.departments.map((dept) => (
