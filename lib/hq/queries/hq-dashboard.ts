@@ -19,7 +19,7 @@ import {
   getRecentMissionEvents,
 } from "../missions/mission-service";
 import { getFinanceSnapshot } from "../finance/queries";
-import { getEmpireScoreSnapshot } from "../empire/queries";
+import { getEmpireScoreSnapshot, getAtlasEmpireSummary } from "../empire/queries";
 
 export type HqDepartmentSnapshot = {
   key: DepartmentKey;
@@ -140,6 +140,12 @@ export type HqSnapshot = {
     activeVentures: number;
     launchReadyCount: number;
   };
+  atlasSummary: {
+    topPriorityScore: number;
+    fundRecommendations: number;
+    killRecommendations: number;
+    activeMissionsTracked: number;
+  };
 };
 
 function deriveAgentStatus(
@@ -229,6 +235,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     totalMissionCount,
     financeSnapshot,
     empireSnapshot,
+    atlasSummary,
   ] = await Promise.all([
     prisma.department.findMany({
       include: {
@@ -267,6 +274,7 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
     prisma.mission.count(),
     getFinanceSnapshot(),
     getEmpireScoreSnapshot(),
+    getAtlasEmpireSummary(),
   ]);
 
   const pending =
@@ -445,5 +453,6 @@ export async function getHqSnapshot(): Promise<HqSnapshot> {
       activeVentures: empireSnapshot.metrics.activeVentures,
       launchReadyCount: empireSnapshot.metrics.launchReadyCount,
     },
+    atlasSummary,
   };
 }

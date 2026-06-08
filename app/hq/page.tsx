@@ -198,6 +198,44 @@ export default async function HqPage() {
       </section>
 
       <section className="mb-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-2xl font-bold">👔 Atlas CEO Advisor</h2>
+            <p className="text-sm text-gray-500">
+              Top priority {hq.atlasSummary.topPriorityScore} ·{" "}
+              {hq.atlasSummary.fundRecommendations} fund ·{" "}
+              {hq.atlasSummary.killRecommendations} kill · advisory only
+            </p>
+          </div>
+          <Link href="/hq/atlas" className="text-sm text-blue-400 hover:underline">
+            Atlas CEO dashboard →
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-2xl">
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Top Priority</p>
+            <p className="text-2xl font-bold text-emerald-400">
+              {hq.atlasSummary.topPriorityScore}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Fund</p>
+            <p className="text-2xl font-bold">{hq.atlasSummary.fundRecommendations}</p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Kill</p>
+            <p className="text-2xl font-bold text-red-400">
+              {hq.atlasSummary.killRecommendations}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-gray-700 bg-gray-900">
+            <p className="text-xs text-gray-500 uppercase">Tracked Active</p>
+            <p className="text-2xl font-bold">{hq.atlasSummary.activeMissionsTracked}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mb-10">
         <h2 className="text-2xl font-bold mb-4">Ventures by Type</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
           {hq.ventureDistribution.map((vt) => (

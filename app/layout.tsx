@@ -38,6 +38,10 @@ export default function RootLayout({
                 🎛️ Command
               </Link>
 
+              <Link href="/hq/atlas">
+                👔 Atlas
+              </Link>
+
               <Link href="/hq/finance">
                 💰 Finance
               </Link>

@@ -322,3 +322,15 @@ export async function getVentureDistribution() {
   const snapshot = await getEmpireScoreSnapshot();
   return snapshot.venturesByType;
 }
+
+/** Atlas executive metrics for empire/HQ integration — advisory only. */
+export async function getAtlasEmpireSummary() {
+  const { getAtlasMissionMetrics } = await import("../atlas/ceo-dashboard");
+  const metrics = await getAtlasMissionMetrics();
+  return {
+    topPriorityScore: metrics.topPriorityScore,
+    fundRecommendations: metrics.fundCount,
+    killRecommendations: metrics.killCount,
+    activeMissionsTracked: metrics.activeMissions,
+  };
+}
