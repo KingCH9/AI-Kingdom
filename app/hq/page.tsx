@@ -87,6 +87,18 @@ export default async function HqPage() {
         </div>
       </div>
 
+      <section className="mb-8">
+        <Link
+          href="/hq/map"
+          className="block p-5 rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-gray-900 to-gray-950 hover:border-cyan-500/50 transition-colors"
+        >
+          <p className="text-lg font-bold">🗺️ Open HQ Map</p>
+          <p className="text-sm text-gray-500 mt-1">
+            Visual headquarters — see agents and scouts operating across departments
+          </p>
+        </Link>
+      </section>
+
       <div className="grid lg:grid-cols-3 gap-4 mb-8">
         <section className="p-6 rounded-2xl border border-purple-500/30 bg-gradient-to-br from-gray-900 to-gray-950">
           <div className="flex items-start justify-between gap-2 mb-4">
