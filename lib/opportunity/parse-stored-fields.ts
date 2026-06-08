@@ -1,0 +1,19 @@
+/**
+ * Parses JSON array fields stored as strings on Opportunity records.
+ */
+export function parseStoredJsonArray(
+  value: string | null | undefined
+): string[] {
+  if (!value) {
+    return [];
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed)
+      ? parsed.filter((item): item is string => typeof item === "string")
+      : [];
+  } catch {
+    return [];
+  }
+}

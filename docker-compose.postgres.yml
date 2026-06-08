@@ -1,0 +1,24 @@
+# Local PostgreSQL for migration verification and optional dev parity.
+# Usage:
+#   docker compose -f docker-compose.postgres.yml up -d
+#   DATABASE_URL=postgresql://ai_empire:ai_empire_test@localhost:5433/ai_empire npm run db:verify-postgres
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ai_empire
+      POSTGRES_PASSWORD: ai_empire_test
+      POSTGRES_DB: ai_empire
+    ports:
+      - "5433:5432"
+    volumes:
+      - ai_empire_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_empire -d ai_empire"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  ai_empire_pgdata:

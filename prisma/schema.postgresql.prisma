@@ -1,0 +1,186 @@
+// Production PostgreSQL schema — mirrors prisma/schema.prisma.
+// Used by Railway deploy: prisma generate/migrate --schema prisma/schema.postgresql.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Agent {
+  id        Int      @id @default(autoincrement())
+  name      String
+  role      String
+  level     Int      @default(1)
+  xp        Int      @default(0)
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+
+  @@index([role])
+}
+
+model Store {
+  id            Int      @id @default(autoincrement())
+  name          String
+  niche         String
+  revenue       Float    @default(0)
+  status        String
+  opportunityId Int?
+  createdAt     DateTime @default(now())
+
+  opportunity Opportunity? @relation(fields: [opportunityId], references: [id])
+  products    Product[]
+  revenues    Revenue[]
+  agentLogs   AgentLog[]
+  customers   Customer[]
+  orders      Order[]
+
+  @@index([opportunityId])
+}
+
+model Customer {
+  id         Int      @id @default(autoincrement())
+  storeId    Int
+  email      String
+  name       String?
+  orderCount Int      @default(0)
+  totalSpent Float    @default(0)
+  externalId String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  store  Store   @relation(fields: [storeId], references: [id])
+  orders Order[]
+
+  @@unique([storeId, email])
+  @@index([storeId])
+}
+
+model Order {
+  id            Int      @id @default(autoincrement())
+  storeId       Int
+  customerId    Int
+  externalId    String?
+  source        String
+  status        String   @default("paid")
+  total         Float
+  currency      String   @default("GBP")
+  lineItemsJson String   @default("[]")
+  placedAt      DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  store    Store    @relation(fields: [storeId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
+  revenues Revenue[]
+
+  @@unique([source, externalId])
+  @@index([storeId])
+  @@index([customerId])
+  @@index([placedAt])
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  name      String
+  price     Float
+  storeId   Int
+  createdAt DateTime @default(now())
+
+  store Store @relation(fields: [storeId], references: [id])
+}
+
+model Revenue {
+  id        Int      @id @default(autoincrement())
+  amount    Float
+  source    String
+  storeId   Int
+  orderId   Int?
+  createdAt DateTime @default(now())
+
+  store Store  @relation(fields: [storeId], references: [id])
+  order Order? @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+}
+
+model Opportunity {
+  id                   Int      @id @default(autoincrement())
+
+  productName          String
+  productDescription   String?
+  whyTrending          String?
+  targetCustomer       String?
+
+  sellingPrice         String?
+  estimatedCostPerUnit String?
+  profitMargin         String?
+
+  supplierSearch       String?
+  supplier             String?
+
+  marketingAngles      String?
+  tiktokIdeas          String?
+  facebookAdIdeas      String?
+  alibabaKeywords      String?
+  launchPlan           String?
+
+  category             String?
+  demandScore          Int?
+  competition          Int?
+
+  riskRating           Int?
+  opportunityScore     Int?
+
+  status               String   @default("researching")
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  stores               Store[]
+  tasks                Task[]
+  agentLogs            AgentLog[]
+
+  @@index([status])
+  @@index([opportunityScore])
+}
+
+model Task {
+  id            Int       @id @default(autoincrement())
+  title         String
+  agent         String
+  status        String    @default("pending")
+  result        String?
+  opportunityId Int?
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+
+  opportunity Opportunity? @relation(fields: [opportunityId], references: [id])
+  agentLogs     AgentLog[]
+
+  @@index([status, createdAt])
+  @@index([agent])
+  @@index([opportunityId])
+}
+
+model AgentLog {
+  id            Int      @id @default(autoincrement())
+  agentName     String
+  action        String
+  opportunityId Int?
+  taskId        Int?
+  storeId       Int?
+  createdAt     DateTime @default(now())
+
+  opportunity Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  task        Task?        @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  store       Store?       @relation(fields: [storeId], references: [id], onDelete: SetNull)
+
+  @@index([agentName, createdAt])
+  @@index([opportunityId])
+  @@index([taskId])
+  @@index([storeId])
+}
