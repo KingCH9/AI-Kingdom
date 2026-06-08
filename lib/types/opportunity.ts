@@ -51,6 +51,9 @@ export interface ClaudeOpportunityResponse {
   alibabaKeywords?: string[];
   launchPlan?: string[];
   category?: string;
+  nicheDifferentiation?: string;
+  demandRationale?: string;
+  competitionRationale?: string;
   riskRating?: number;
   opportunityScore?: number;
 }

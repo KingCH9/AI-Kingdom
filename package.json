@@ -14,6 +14,7 @@
     "db:migrate:deploy": "node scripts/migrate-deploy.mjs",
     "db:railway:recover": "node scripts/railway-migrate-recover.mjs",
     "db:pipeline:status": "node scripts/pipeline-status.mjs",
+    "db:diversity:batch": "tsx --env-file=.env scripts/diversity-batch-generate.ts",
     "db:railway:inspect": "node scripts/railway-migrate-recover.mjs --inspect",
     "db:verify-postgres": "tsx scripts/verify-postgres-migrations.ts",
     "worker": "tsx --env-file=.env worker.ts",

@@ -1,4 +1,5 @@
 import type { ClaudeOpportunityResponse } from "@/lib/types";
+import type { DiversityContext } from "@/lib/opportunity/generation-diversity";
 import { getAnthropicApiKey } from "@/lib/env";
 import { getAnthropicClient } from "./client";
 import {
@@ -6,7 +7,11 @@ import {
   OPPORTUNITY_GENERATION_MODEL,
 } from "./config";
 import { extractTextFromMessage, parseJsonFromClaudeText } from "./parse-response";
-import { OPPORTUNITY_GENERATION_PROMPT } from "./prompts/opportunity-generation";
+import { buildOpportunityGenerationPrompt } from "./prompts/opportunity-generation";
+
+export type GenerateOpportunityOptions = {
+  diversityContext: DiversityContext;
+};
 
 export type GenerateOpportunitySuccess = {
   success: true;
@@ -27,7 +32,9 @@ export type GenerateOpportunityResult =
  * Calls Claude to generate a structured ecommerce opportunity.
  * Returns parsed JSON or a failure result — does not touch the database.
  */
-export async function generateOpportunityWithClaude(): Promise<GenerateOpportunityResult> {
+export async function generateOpportunityWithClaude(
+  options: GenerateOpportunityOptions
+): Promise<GenerateOpportunityResult> {
   if (!getAnthropicApiKey()) {
     console.error("[generate-opportunity] ANTHROPIC_API_KEY is not configured");
     return {
@@ -35,6 +42,8 @@ export async function generateOpportunityWithClaude(): Promise<GenerateOpportuni
       message: "ANTHROPIC_API_KEY is not configured — set it in Railway Variables",
     };
   }
+
+  const prompt = buildOpportunityGenerationPrompt(options.diversityContext);
 
   try {
     console.log(
@@ -48,7 +57,7 @@ export async function generateOpportunityWithClaude(): Promise<GenerateOpportuni
       messages: [
         {
           role: "user",
-          content: OPPORTUNITY_GENERATION_PROMPT,
+          content: prompt,
         },
       ],
     });

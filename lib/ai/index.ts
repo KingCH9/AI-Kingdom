@@ -9,11 +9,12 @@ export { getAnthropicClient } from "./client";
 
 export { extractTextFromMessage, parseJsonFromClaudeText } from "./parse-response";
 
-export { OPPORTUNITY_GENERATION_PROMPT } from "./prompts/opportunity-generation";
+export { OPPORTUNITY_GENERATION_PROMPT, buildOpportunityGenerationPrompt } from "./prompts/opportunity-generation";
 
 export {
   generateOpportunityWithClaude,
   type GenerateOpportunityFailure,
+  type GenerateOpportunityOptions,
   type GenerateOpportunityResult,
   type GenerateOpportunitySuccess,
 } from "./generate-opportunity";

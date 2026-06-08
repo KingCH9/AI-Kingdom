@@ -1,11 +1,89 @@
-/**
- * Prompt template for Claude opportunity discovery.
- * Kept separate from route handlers so agents can reuse it later.
- */
-export const OPPORTUNITY_GENERATION_PROMPT = `
-You are a world-class ecommerce strategist.
+import type { DiversityContext } from "@/lib/opportunity/generation-diversity";
+import { ROTATION_TARGET_CATEGORIES } from "@/lib/opportunity/generation-diversity";
 
-Your task is to identify the single best ecommerce opportunity right now.
+const TARGET_CATEGORY_LIST = ROTATION_TARGET_CATEGORIES.join(", ");
+
+/**
+ * Builds the Claude prompt with diversity constraints from recent opportunities.
+ */
+export function buildOpportunityGenerationPrompt(
+  context: DiversityContext
+): string {
+  const recentBlock =
+    context.recent.length === 0
+      ? "No recent opportunities in the database yet."
+      : context.recent
+          .map(
+            (row, index) =>
+              `${index + 1}. "${row.productName}" — category: ${row.category}, niche: ${row.niche}`
+          )
+          .join("\n");
+
+  const doNotRepeatNames =
+    context.doNotRepeat.productNames.length > 0
+      ? context.doNotRepeat.productNames.map((name) => `- ${name}`).join("\n")
+      : "- (none)";
+
+  const doNotRepeatCategories =
+    context.doNotRepeat.categories.length > 0
+      ? context.doNotRepeat.categories.map((cat) => `- ${cat}`).join("\n")
+      : "- (none)";
+
+  const doNotRepeatNiches =
+    context.doNotRepeat.niches.length > 0
+      ? context.doNotRepeat.niches.map((niche) => `- ${niche}`).join("\n")
+      : "- (none)";
+
+  const blocked =
+    context.blockedCategories.length > 0
+      ? context.blockedCategories.join(", ")
+      : "(none)";
+
+  const preferred =
+    context.preferredCategories.length > 0
+      ? context.preferredCategories.slice(0, 6).join(", ")
+      : TARGET_CATEGORY_LIST;
+
+  return `
+You are a world-class ecommerce strategist scouting diverse product opportunities for an autonomous ecommerce empire.
+
+Your task is to identify ONE specific, novel ecommerce opportunity that is clearly different from recent discoveries.
+
+## CATEGORY ROTATION (mandatory)
+
+Choose the "category" field from this target list only:
+${TARGET_CATEGORY_LIST}
+
+Rules:
+- Do NOT use any category used by the last 3 opportunities: ${blocked}
+- Prefer underrepresented categories from recent history. Top picks now: ${preferred}
+- Avoid wellness/red-light/sauna/posture-corrector clusters unless category is genuinely underrepresented and the product concept is structurally different
+- Pick a specific niche within the category — not a generic category label
+
+## DO NOT REPEAT (last ${context.recent.length} opportunities)
+
+Recent opportunities:
+${recentBlock}
+
+Do NOT repeat these product names:
+${doNotRepeatNames}
+
+Do NOT repeat these categories (already saturated in recent batch):
+${doNotRepeatCategories}
+
+Do NOT repeat these niches/concepts:
+${doNotRepeatNiches}
+
+Avoid similar product concepts (same mechanism, same use case, same buyer, cosmetic rename).
+
+## REQUIRED RATIONALE FIELDS
+
+You MUST explain in dedicated fields:
+- nicheDifferentiation — why this niche is structurally different from the recent opportunities above
+- demandRationale — why demand exists now (trends, behavior shift, seasonality)
+- competitionRationale — why competition is manageable for a new entrant
+
+## ANALYSIS CRITERIA
 
 Analyze:
 - Current market trends
@@ -15,8 +93,6 @@ Analyze:
 - Ease of sourcing
 - Advertising potential
 - Long-term scalability
-
-Choose one specific ecommerce category for the "category" field (examples: Pets, Fitness, Beauty, Home, Tech, Fashion, Health, Baby, Outdoor).
 
 Return ONLY valid JSON in this exact format:
 
@@ -36,6 +112,9 @@ Return ONLY valid JSON in this exact format:
   "alibabaKeywords": [],
   "launchPlan": [],
   "category": "",
+  "nicheDifferentiation": "",
+  "demandRationale": "",
+  "competitionRationale": "",
   "riskRating": 0,
   "opportunityScore": 0
 }
@@ -43,3 +122,12 @@ Return ONLY valid JSON in this exact format:
 Do not include markdown.
 Return raw JSON only.
 `.trim();
+}
+
+/** @deprecated Use buildOpportunityGenerationPrompt with diversity context. */
+export const OPPORTUNITY_GENERATION_PROMPT = buildOpportunityGenerationPrompt({
+  recent: [],
+  doNotRepeat: { productNames: [], categories: [], niches: [] },
+  blockedCategories: [],
+  preferredCategories: [...ROTATION_TARGET_CATEGORIES],
+});

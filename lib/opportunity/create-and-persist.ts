@@ -5,6 +5,11 @@ import { deriveScoresFromClaudeResponse } from "./derive-scores";
 import { deriveOpportunityCategory } from "./derive-category";
 import { buildOpportunityScores } from "./scoring";
 import { getInitialOpportunityStatus } from "./status";
+import { getOpportunityDiversityContext } from "./fetch-diversity-context";
+import {
+  computeDiversityScore,
+  normalizeRotationCategory,
+} from "./generation-diversity";
 
 export type CreateOpportunitySuccess = {
   success: true;
@@ -28,7 +33,8 @@ export type CreateOpportunityResult =
  * Always enters researching — Atlas owns validation.
  */
 export async function createOpportunityFromClaude(): Promise<CreateOpportunityResult> {
-  const generated = await generateOpportunityWithClaude();
+  const diversityContext = await getOpportunityDiversityContext();
+  const generated = await generateOpportunityWithClaude({ diversityContext });
 
   if (!generated.success) {
     return {
@@ -43,6 +49,20 @@ export async function createOpportunityFromClaude(): Promise<CreateOpportunityRe
   const { opportunityScore } = buildOpportunityScores(scoreInput);
   const status = getInitialOpportunityStatus();
   const category = deriveOpportunityCategory(data);
+  const rotationCategory = normalizeRotationCategory(category);
+  const diversityScore = computeDiversityScore(
+    data.productName ?? "",
+    rotationCategory,
+    diversityContext
+  );
+
+  console.log(`[opportunity-generator] category=${rotationCategory}`);
+  console.log(`[opportunity-generator] diversity-score=${diversityScore}`);
+  if (data.nicheDifferentiation?.trim()) {
+    console.log(
+      `[opportunity-generator] niche-differentiation=${data.nicheDifferentiation.slice(0, 120)}`
+    );
+  }
 
   try {
     console.log("[create-opportunity] Persisting to database");
