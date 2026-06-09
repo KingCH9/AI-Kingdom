@@ -16,6 +16,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/", label: "🏠 Dashboard" },
       { href: "/hq", label: "🏛️ HQ" },
       { href: "/hq/map", label: "🗺️ HQ Map" },
+      { href: "/hq/gamification", label: "🏆 Gamification" },
       { href: "/hq/missions", label: "🎯 Missions" },
       { href: "/hq/command", label: "🎛️ Command" },
     ],

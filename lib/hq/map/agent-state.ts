@@ -6,11 +6,15 @@ export type HqAgentLiveState = {
   key: string;
   name: string;
   avatarEmoji: string;
+  avatarKey: string;
   kind: HqMapAgentKind;
   department: string;
   level: number;
   xp: number;
+  xpProgressPercent: number;
   score: number;
+  unlockedAchievementCount: number;
+  achievementLabels: string[];
   profileHref: string;
   homeRoom: HqRoomId;
   currentRoom: HqRoomId;

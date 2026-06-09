@@ -6,6 +6,7 @@ import {
   type HqMapLiveState,
 } from "@/lib/hq/map";
 import { createAnimatedAgent, type AnimatedAgentHandle } from "./agent-animation";
+import { createAvatarAnimations, preloadAvatarSprites } from "./avatar-sprites";
 import { drawRoom } from "./hq-room";
 
 type CreateHqMapGameOptions = {
@@ -25,12 +26,25 @@ export function createHqMapGame({
 }: CreateHqMapGameOptions): Phaser.Game {
   class HqMapScene extends Phaser.Scene {
     private agentHandles: AnimatedAgentHandle[] = [];
+    private pendingState = state;
 
     constructor() {
       super({ key: "HqMapScene" });
     }
 
+    preload() {
+      preloadAvatarSprites(this);
+    }
+
     create() {
+      createAvatarAnimations(this);
+      this.buildScene(this.pendingState);
+    }
+
+    buildScene(liveState: HqMapLiveState) {
+      this.children.removeAll(true);
+      this.agentHandles = [];
+
       const bg = this.add.graphics();
       bg.fillGradientStyle(0x020617, 0x020617, 0x0f172a, 0x0f172a, 1);
       bg.fillRect(0, 0, HQ_MAP_WIDTH, HQ_MAP_HEIGHT);
@@ -43,13 +57,13 @@ export function createHqMapGame({
         })
         .setOrigin(0.5, 0);
 
-      for (const room of state.rooms) {
+      for (const room of liveState.rooms) {
         drawRoom(this, room, (href) => {
           window.location.href = href;
         });
       }
 
-      this.agentHandles = state.agentStates.map((agent) =>
+      this.agentHandles = liveState.agentStates.map((agent) =>
         createAnimatedAgent(this, agent, {
           onAgentHover,
           onAgentClick,

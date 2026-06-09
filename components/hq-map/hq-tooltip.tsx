@@ -17,12 +17,16 @@ export function HqTooltip({ agent, x, y }: HqTooltipProps) {
         top: Math.max(8, y - 8),
       }}
     >
-      <p className="font-semibold text-sm text-white">
-        {agent.avatarEmoji} {agent.name}
-      </p>
+      <p className="font-semibold text-sm text-white">{agent.name}</p>
       <p className="text-gray-300 mt-1">
-        Level {agent.level} · {agent.xp} XP
+        Level {agent.level} · {agent.xp.toLocaleString()} XP · Score {agent.score}
       </p>
+      <div className="mt-2 h-1.5 w-full rounded-full bg-gray-800 overflow-hidden">
+        <div
+          className="h-full rounded-full bg-cyan-500"
+          style={{ width: `${agent.xpProgressPercent}%` }}
+        />
+      </div>
       <p className="text-gray-400 mt-1 capitalize">
         {agent.kind === "scout" ? "Scout" : "Agent"} ·{" "}
         {agent.department.replace(/_/g, " ")}
@@ -42,6 +46,18 @@ export function HqTooltip({ agent, x, y }: HqTooltipProps) {
           </>
         )}
       </div>
+      {agent.unlockedAchievementCount > 0 && (
+        <div className="mt-2 pt-2 border-t border-gray-800">
+          <p className="text-gray-500">
+            Achievements · {agent.unlockedAchievementCount} unlocked
+          </p>
+          <ul className="mt-1 space-y-0.5 text-amber-300">
+            {agent.achievementLabels.slice(0, 3).map((label) => (
+              <li key={label}>🏆 {label}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       <p className="text-blue-400 mt-2">Click to open profile →</p>
     </div>
   );

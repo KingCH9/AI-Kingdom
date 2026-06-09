@@ -1,5 +1,9 @@
 import type Phaser from "phaser";
-import { AGENT_MARKER_SIZE } from "@/lib/hq/map";
+import {
+  activityToAnimationKey,
+  animationKeyToPhaserAnim,
+  getAvatarDefinition,
+} from "@/lib/hq/gamification/avatar-registry";
 import type { HqAgentLiveState } from "@/lib/hq/map/agent-state";
 import { interpolateAgentPosition, walkingBobOffset } from "@/lib/hq/map/agent-state-utils";
 
@@ -14,31 +18,46 @@ export type AnimatedAgentHandle = {
   destroy: () => void;
 };
 
+const AVATAR_SCALE = 1.35;
+const HIT_RADIUS = 18;
+
 export function createAnimatedAgent(
   scene: Phaser.Scene,
   state: HqAgentLiveState,
   handlers: AnimatedAgentHandlers
 ): AnimatedAgentHandle {
-  const radius = AGENT_MARKER_SIZE / 2;
+  const avatar = getAvatarDefinition(state.avatarKey || state.key, state.department);
   const container = scene.add.container(state.fromX, state.fromY);
 
-  const circle = scene.add.graphics();
-  const pulseRing = scene.add.graphics();
+  const sprite = scene.add.sprite(0, 0, avatar.key, 0);
+  sprite.setScale(AVATAR_SCALE);
+  sprite.setOrigin(0.5, 0.85);
 
-  const emoji = scene.add.text(0, -2, state.avatarEmoji, {
-    fontFamily: "Segoe UI Emoji, Apple Color Emoji, sans-serif",
-    fontSize: "20px",
-  });
-  emoji.setOrigin(0.5);
-
-  const label = scene.add.text(0, radius + 6, `L${state.level}`, {
+  const levelBadge = scene.add.graphics();
+  const levelText = scene.add.text(0, -34, `L${state.level}`, {
     fontFamily: "system-ui, sans-serif",
-    fontSize: "10px",
-    color: "#cbd5e1",
+    fontSize: "9px",
+    color: "#f8fafc",
+    fontStyle: "bold",
   });
-  label.setOrigin(0.5, 0);
+  levelText.setOrigin(0.5);
 
-  const hit = scene.add.circle(0, 0, radius, 0xffffff, 0.001);
+  const xpBarBg = scene.add.graphics();
+  const xpBarFill = scene.add.graphics();
+
+  const achievementIcon = state.unlockedAchievementCount > 0
+    ? scene.add.text(14, -30, "🏆", { fontSize: "10px" })
+    : null;
+  achievementIcon?.setOrigin(0.5);
+
+  const activityLabel = scene.add.text(0, 18, "", {
+    fontFamily: "system-ui, sans-serif",
+    fontSize: "8px",
+    color: "#67e8f9",
+  });
+  activityLabel.setOrigin(0.5, 0);
+
+  const hit = scene.add.circle(0, -4, HIT_RADIUS, 0xffffff, 0.001);
   hit.setInteractive({ useHandCursor: true });
   hit.on("pointerover", (pointer: Phaser.Input.Pointer) => {
     handlers.onAgentHover(state, pointer);
@@ -46,35 +65,71 @@ export function createAnimatedAgent(
   hit.on("pointerout", () => handlers.onAgentHover(null));
   hit.on("pointerup", () => handlers.onAgentClick(state));
 
-  container.add([circle, pulseRing, emoji, label, hit]);
+  const children: Phaser.GameObjects.GameObject[] = [
+    sprite,
+    xpBarBg,
+    xpBarFill,
+    levelBadge,
+    levelText,
+    activityLabel,
+    hit,
+  ];
+  if (achievementIcon) children.splice(3, 0, achievementIcon);
+  container.add(children);
   container.setDepth(10);
 
   let progress = state.movementProgress;
-  let pulsePhase = 0;
+  let currentAnimKey = "";
+  let flipX = state.toX < state.fromX;
+
+  const playAnimation = (activity: HqAgentLiveState["activity"]) => {
+    const animKey = activityToAnimationKey(activity);
+    const phaserAnim = animationKeyToPhaserAnim(avatar, animKey);
+    if (currentAnimKey !== phaserAnim) {
+      sprite.play(phaserAnim, true);
+      currentAnimKey = phaserAnim;
+    }
+  };
+
+  const drawXpBar = () => {
+    const barW = 28;
+    const barH = 3;
+    const barX = -barW / 2;
+    const barY = 8;
+    const pct = Math.min(1, state.xpProgressPercent / 100);
+
+    xpBarBg.clear();
+    xpBarBg.fillStyle(0x1e293b, 0.9);
+    xpBarBg.fillRoundedRect(barX, barY, barW, barH, 1);
+
+    xpBarFill.clear();
+    xpBarFill.fillStyle(state.isActive ? 0x22d3ee : 0x64748b, 1);
+    xpBarFill.fillRoundedRect(barX, barY, barW * pct, barH, 1);
+
+    levelBadge.clear();
+    levelBadge.fillStyle(0x0f172a, 0.85);
+    levelBadge.fillRoundedRect(-14, -38, 28, 12, 3);
+    levelBadge.lineStyle(1, state.isActive ? 0x38bdf8 : 0x475569, 1);
+    levelBadge.strokeRoundedRect(-14, -38, 28, 12, 3);
+  };
+
+  playAnimation(state.activity);
+  sprite.setFlipX(flipX);
+  drawXpBar();
+  activityLabel.setText(state.activity === "idle" ? "" : state.activity);
 
   const drawMarker = () => {
     const pos = interpolateAgentPosition(state, progress);
     const bob = state.activity === "walking" ? walkingBobOffset(scene.game.loop.time) : 0;
 
     container.setPosition(pos.x, pos.y + bob);
-
-    circle.clear();
-    const fillColor =
-      state.kind === "scout" ? 0x065f46 : state.isActive ? 0x1d4ed8 : 0x1e3a5f;
-    const strokeColor =
-      state.kind === "scout" ? 0x34d399 : state.isActive ? 0x93c5fd : 0x60a5fa;
-
-    circle.fillStyle(fillColor, 1);
-    circle.fillCircle(0, 0, radius);
-    circle.lineStyle(2, strokeColor, 1);
-    circle.strokeCircle(0, 0, radius);
-
-    pulseRing.clear();
-    if (state.isActive) {
-      const pulse = 1 + Math.sin(pulsePhase) * 0.12;
-      pulseRing.lineStyle(2, strokeColor, 0.35);
-      pulseRing.strokeCircle(0, 0, radius * pulse + 4);
-    }
+    flipX = state.toX < state.fromX;
+    sprite.setFlipX(flipX);
+    playAnimation(state.activity);
+    drawXpBar();
+    activityLabel.setText(
+      state.activity === "walking" || state.activity === "idle" ? "" : state.activity
+    );
   };
 
   drawMarker();
@@ -86,7 +141,6 @@ export function createAnimatedAgent(
       progress = 0;
     }
 
-    pulsePhase += delta * 0.006;
     drawMarker();
   };
 

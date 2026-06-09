@@ -19,8 +19,20 @@ import type {
   HqDepartmentStatus,
   HqMapLiveState,
 } from "./agent-state";
+import { getAvatarTextureKey } from "../gamification/avatar-registry";
+import { getGamificationSnapshot } from "../gamification/gamification-engine";
+import { PERFORMANCE_LEVEL_THRESHOLDS } from "../performance/performance-sync";
 import { getHqMapState, type HqMapAgent } from "./map-state";
 import { HQ_ROOMS, type HqRoomId } from "./room-registry";
+
+function xpProgressPercent(xp: number, level: number): number {
+  const currentThreshold = PERFORMANCE_LEVEL_THRESHOLDS[level - 1] ?? 0;
+  const nextThreshold =
+    PERFORMANCE_LEVEL_THRESHOLDS[level] ??
+    PERFORMANCE_LEVEL_THRESHOLDS[PERFORMANCE_LEVEL_THRESHOLDS.length - 1];
+  const span = Math.max(1, nextThreshold - currentThreshold);
+  return Math.min(100, Math.round(((xp - currentThreshold) / span) * 100));
+}
 
 type MissionRow = {
   id: number;
@@ -129,11 +141,15 @@ function computeAgentLiveState(
     key: agent.key,
     name: agent.name,
     avatarEmoji: agent.avatarEmoji,
+    avatarKey: getAvatarTextureKey(agent.key, agent.department),
     kind: agent.kind,
     department: agent.department,
     level: agent.level,
     xp: agent.xp,
+    xpProgressPercent: xpProgressPercent(agent.xp, agent.level),
     score: agent.score,
+    unlockedAchievementCount: 0,
+    achievementLabels: [],
     profileHref: agent.profileHref,
     homeRoom,
     currentRoom: isMoving ? homeRoom : targetRoom,
@@ -307,11 +323,17 @@ async function loadDepartmentContext(): Promise<{
 
 /** Read-only live HQ map — agent movement states and activity feed. */
 export async function getHqMapLiveState(): Promise<HqMapLiveState> {
-  const [baseState, departmentContext, missions] = await Promise.all([
+  const [baseState, departmentContext, missions, gamification] = await Promise.all([
     getHqMapState(),
     loadDepartmentContext(),
     loadActiveMissions(),
+    getGamificationSnapshot(),
   ]);
+
+  const unlockedLabels = gamification.achievements
+    .filter((a) => a.unlocked)
+    .map((a) => a.name)
+    .slice(0, 5);
 
   const departmentMissionByKey = new Map(
     departmentContext.departments.map((dept) => [dept.key, dept.currentMissionTitle])
@@ -324,12 +346,18 @@ export async function getHqMapLiveState(): Promise<HqMapLiveState> {
     const slot = roomSlotCounter.get(homeRoom) ?? 0;
     roomSlotCounter.set(homeRoom, slot + 1);
 
-    return computeAgentLiveState(
+    const live = computeAgentLiveState(
       agent,
       missions,
       departmentMissionByKey.get(agent.department) ?? null,
       slot
     );
+
+    return {
+      ...live,
+      unlockedAchievementCount: gamification.unlockedAchievementCount,
+      achievementLabels: unlockedLabels,
+    };
   });
 
   const roomOccupancy = buildRoomOccupancy(agentStates);

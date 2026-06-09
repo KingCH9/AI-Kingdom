@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getGamificationSnapshot } from "@/lib/hq/gamification";
 import { getHqSnapshot } from "@/lib/hq/queries/hq-dashboard";
 import { BudgetUsageBar, formatGbp } from "@/components/hq/finance-ui";
 import type { HqAgentStatus } from "@/lib/hq/constants";
@@ -41,7 +42,10 @@ function formatMoney(amount: number): string {
 }
 
 export default async function HqPage() {
-  const hq = await getHqSnapshot();
+  const [hq, gamification] = await Promise.all([
+    getHqSnapshot(),
+    getGamificationSnapshot(),
+  ]);
 
   return (
     <div className="p-8 max-w-7xl">
@@ -94,10 +98,74 @@ export default async function HqPage() {
         >
           <p className="text-lg font-bold">🗺️ Open HQ Map</p>
           <p className="text-sm text-gray-500 mt-1">
-            Visual headquarters — see agents and scouts operating across departments
+            Visual headquarters — animated agent avatars with XP bars and live activity
           </p>
         </Link>
       </section>
+
+      <div className="grid lg:grid-cols-3 gap-4 mb-8">
+        <Link
+          href="/hq/gamification"
+          className="p-5 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-gray-900 to-gray-950 hover:border-amber-500/50 transition-colors block"
+        >
+          <p className="text-xs text-gray-500 uppercase">Empire Level</p>
+          <p className="text-4xl font-bold text-amber-400 mt-1">
+            {gamification.empire.empireLevel}
+          </p>
+          <div className="mt-3 h-2 rounded-full bg-gray-800 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-amber-500"
+              style={{ width: `${gamification.empire.progressPercent}%` }}
+            />
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            {gamification.empire.empireXp.toLocaleString()} XP ·{" "}
+            {gamification.empire.progressPercent}% to next level
+          </p>
+        </Link>
+
+        <Link
+          href="/hq/gamification"
+          className="p-5 rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-gray-900 to-gray-950 hover:border-emerald-500/50 transition-colors block"
+        >
+          <p className="text-xs text-gray-500 uppercase">Recent Achievement</p>
+          {gamification.recentAchievement ? (
+            <>
+              <p className="text-lg font-bold mt-2">
+                🏆 {gamification.recentAchievement.name}
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                {gamification.recentAchievement.description}
+              </p>
+            </>
+          ) : (
+            <p className="text-lg font-bold mt-2 text-gray-400">None yet</p>
+          )}
+          <p className="text-xs text-gray-500 mt-3">
+            {gamification.unlockedAchievementCount} achievements unlocked
+          </p>
+        </Link>
+
+        <Link
+          href="/hq/gamification"
+          className="p-5 rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-gray-900 to-gray-950 hover:border-cyan-500/50 transition-colors block"
+        >
+          <p className="text-xs text-gray-500 uppercase">Next Unlock</p>
+          {gamification.nextUnlock ? (
+            <>
+              <p className="text-lg font-bold mt-2">{gamification.nextUnlock.name}</p>
+              <p className="text-sm text-gray-500 mt-1">
+                {gamification.nextUnlock.description}
+              </p>
+              <p className="text-xs text-cyan-400 mt-3">
+                Empire Level {gamification.nextUnlock.requiredEmpireLevel} required
+              </p>
+            </>
+          ) : (
+            <p className="text-lg font-bold mt-2 text-emerald-400">All unlocks earned</p>
+          )}
+        </Link>
+      </div>
 
       <div className="grid lg:grid-cols-3 gap-4 mb-8">
         <section className="p-6 rounded-2xl border border-purple-500/30 bg-gradient-to-br from-gray-900 to-gray-950">
